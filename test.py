@@ -55,7 +55,7 @@ def rotation(Wfn, alpha, beta, gamma):
     return new_Wfn
 
 
-def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt):
+def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt, spin_f):
     # Calculate densities:
     n = abs(psiP2) ** 2 + abs(psiP1) ** 2 + abs(psi0) ** 2 + abs(psiM1) ** 2 + abs(psiM2) ** 2
     alpha = psi0 ** 2 - 2 * psiP1 * psiM1 + 2 * psiP2 * psiM2
@@ -67,12 +67,13 @@ def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt):
     sinT = cp.sin(c4 * S * dt) / S
     sinT[S == 0] = 0  # Corrects division by 0
 
-    Wfn = cp.empty(5, )
-    Wfn[0] = psiP2 * cosT + 1j * (n * psiP2 - alpha * cp.conj(psiM2)) * sinT
-    Wfn[1] = psiP1 * cosT + 1j * (n * psiP1 + alpha * cp.conj(psiM1)) * sinT
-    Wfn[2] = psi0 * cosT + 1j * (n * psi0 - alpha * cp.conj(psi0)) * sinT
-    Wfn[3] = psiM1 * cosT + 1j * (n * psiM1 + alpha * cp.conj(psiP1)) * sinT
-    Wfn[4] = psiM2 * cosT + 1j * (n * psiM2 - alpha * cp.conj(psiP2)) * sinT
+    Wfn = [psiP2 * cosT + 1j * (n * psiP2 - alpha * cp.conj(psiM2)) * sinT,
+           psiP1 * cosT + 1j * (n * psiP1 + alpha * cp.conj(psiM1)) * sinT,
+           psi0 * cosT + 1j * (n * psi0 - alpha * cp.conj(psi0)) * sinT,
+           psiM1 * cosT + 1j * (n * psiM1 + alpha * cp.conj(psiP1)) * sinT,
+           psiM2 * cosT + 1j * (n * psiM2 - alpha * cp.conj(psiP2)) * sinT]
+
+    print('Atom num after spin-singlet: {}'.format(sum([dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi])))
 
     # Calculate spin vectors
     fp = cp.sqrt(6) * (Wfn[1] * cp.conj(Wfn[2]) + Wfn[2] * cp.conj(Wfn[3])) + 2 * (Wfn[3] * cp.conj(Wfn[4]) +
@@ -99,13 +100,43 @@ def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt):
     for ii in range(len(Wfn)):
         Wfn[ii] += Qfactor * Qpsi[ii] + Q2factor * Q2psi[ii] + Q3factor * Q3psi[ii] + Q4factor * Q4psi[ii]
 
+    print('Atom num after spin term: {}'.format(sum([dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi])))
+
     # Evolve (c0+c4)*n^2 + (V + pm)*n:
     for ii in range(len(Wfn)):
         mF = spin_f - ii
         Wfn[ii] *= cp.exp(-1j * dt * ((c0 + c4) * n + V + p * mF))
 
+    print('Atom num after density: {}'.format(sum([dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi])))
+
     return Wfn
 
+
+def first_kinetic_evo(Psi, A, B, C):
+    """ Calculates kinetic term and then Fourier
+        transforms back in positional space. """
+
+    Wfn = [cp.fft.ifftn(A * Psi[0]),
+           cp.fft.ifftn(B * Psi[1]),
+           cp.fft.ifftn(C * Psi[2]),
+           cp.fft.ifftn(B * Psi[3]),
+           cp.fft.ifftn(A * Psi[4])]
+
+    return Wfn
+
+
+def last_kinetic_evo(Psi, A, B, C):
+    """ Fourier transforms wfn first, then
+        calculates kinetic term, leaving it
+        in k-space. """
+
+    Wfn = [A * cp.fft.fftn(Psi[0]),
+           B * cp.fft.fftn(Psi[1]),
+           C * cp.fft.fftn(Psi[2]),
+           B * cp.fft.fftn(Psi[3]),
+           A * cp.fft.fftn(Psi[4])]
+
+    return Wfn
 
 # --------------------------------------------------------------------------------------------------------------------
 # Spatial and Potential parameters:
@@ -127,23 +158,23 @@ kx = cp.arange(-Mx, Mx) * dkx
 ky = cp.arange(-My, My) * dky
 kz = cp.arange(-Mz, Mz) * dkz
 Kx, Ky, Kz = cp.meshgrid(kx, ky, kz, indexing='ij')
-Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
+# Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
 
 # Controlled variables:
 spin_f = 2  # Spin-2
 omega_trap = 0.05
-V = 0  # 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
+V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
-q = 0.  # Quadratic Zeeman
-c0 = 1000
-c2 = 10
-c4 = -100
+q = -0.05  # Quadratic Zeeman
+c0 = 5000 / (Nx * Ny * Nz)
+c2 = 1000 / (Nx * Ny * Nz)
+c4 = -1000 / (Nx * Ny * Nz)
 
 # Time steps, number and wavefunction save variables
-Nt = 100
+Nt = 1000
 Nframe = 100  # Saves data every Nframe time steps
 eta = 1e-3
-dt = 1e-2  # Time step
+dt = -1j * 1e-2  # Time step
 t = 0.
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -161,108 +192,35 @@ psiM2 = 1 / cp.sqrt(2) * cp.exp(1j * phi)
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 
 # Spin rotation on wavefunction:
-al = 0
-beta = 0.1
-gamma = 0
-Psi = rotation(Psi, al, beta, gamma)
+alpha_angle = 0
+beta_angle = 0.1
+gamma_angle = 0
+Psi = rotation(Psi, alpha_angle, beta_angle, gamma_angle)
 N = [dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi]  # Atom number of each component
 
 Psi = [cp.fft.fftn(wfn) for wfn in Psi]  # Transforming wfn to Fourier space
 
-dt = -1j * dt
-
-# TODO: Use breakpoints and see if it is a particular component blowing up
+# Coefficients for kinetic evolution:
+Ek = cp.fft.fftshift(0.5 * (Kx ** 2 + Ky ** 2 + Kz ** 2))
+A = cp.exp(-1j * (Ek + 2 * q) * dt / 2)
+B = cp.exp(-1j * (Ek + q) * dt / 2)
+C = cp.exp(-1j * Ek * dt / 2)
 
 # --------------------------------------------------------------------------------------------------------------------
 # Imaginary time:
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
-    print('Atom num at start: {}'.format(sum([dx * dy * cp.sum(cp.abs(cp.fft.ifftn(wfn)) ** 2) for wfn in Psi])))
     # Kinetic evolution:
-    for ii in range(len(Psi)):
-        mF = spin_f - ii  # Calculate current component
-        Psi[ii] *= cp.exp(-0.25 * 1j * dt * (Kx ** 2 + Ky ** 2 + Kz ** 2 + 2 * mF ** 2 * q))  # Kinetic evolution
-        Psi[ii] = cp.fft.ifftn(Psi[ii])  # Inverse Fourier transform all components
+    Psi = first_kinetic_evo(Psi, A, B, C)
 
-    print('Atom num after first kinetic: {}'.format(sum([dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi])))
-    # Update components:
-    psiP2 = Psi[0]
-    psiP1 = Psi[1]
-    psi0 = Psi[2]
-    psiM1 = Psi[3]
-    psiM2 = Psi[4]
-
-    # Calculate densities:
-    n = abs(psiP2) ** 2 + abs(psiP1) ** 2 + abs(psi0) ** 2 + abs(psiM1) ** 2 + abs(psiM2) ** 2
-    alpha = psi0 ** 2 - 2 * psiP1 * psiM1 + 2 * psiP2 * psiM2
-    fz = 2 * (abs(psiP2) ** 2 - abs(psiM2) ** 2) + abs(psiP1) ** 2 - abs(psiM1) ** 2
-
-    # Evolve spin-singlet term -c4*(n^2-|alpha|^2)
-    S = cp.sqrt(n ** 2 - abs(alpha) ** 2)
-    cosT = cp.cos(c4 * S * dt)
-    sinT = cp.sin(c4 * S * dt) / S
-    sinT[S == 0] = 0  # Corrects division by 0
-
-    Psi[0] = psiP2 * cosT + 1j * (n * psiP2 - alpha * cp.conj(psiM2)) * sinT
-    Psi[1] = psiP1 * cosT + 1j * (n * psiP1 + alpha * cp.conj(psiM1)) * sinT
-    Psi[2] = psi0 * cosT + 1j * (n * psi0 - alpha * cp.conj(psi0)) * sinT
-    Psi[3] = psiM1 * cosT + 1j * (n * psiM1 + alpha * cp.conj(psiP1)) * sinT
-    Psi[4] = psiM2 * cosT + 1j * (n * psiM2 - alpha * cp.conj(psiP2)) * sinT
-
-    print('Atom num after spin singlet: {}'.format(sum([dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi])))
-
-    # Calculate spin vectors
-    fp = cp.sqrt(6) * (Psi[1] * cp.conj(Psi[2]) + Psi[2] * cp.conj(Psi[3])) + \
-         2 * (Psi[3] * cp.conj(Psi[4]) + Psi[0] * cp.conj(Psi[1]))  # Perpendicular spin
-    F = cp.sqrt(fz ** 2 + abs(fp) ** 2)
-
-    # Calculate cos, sin and Qfactor terms:
-    C1, S1 = cp.cos(c2 * F * dt), cp.sin(c2 * F * dt)
-    C2, S2 = cp.cos(2 * c2 * F * dt), cp.sin(2 * c2 * F * dt)
-    Qfactor = 1j * (-4/3 * S1 + 1 / 6 * S2)
-    Q2factor = (-5/4 + 4/3 * C1 - 1/12 * C2)
-    Q3factor = 1j * (1/3 * S1 - 1/6 * S2)
-    Q4factor = (1/4 - 1/3 * C1 + 1/12 * C2)
-
-    fzQ = fz / F
-    fpQ = fp / F
-
-    Qpsi = calc_Qpsi(fzQ, fpQ, Psi)
-    Q2psi = calc_Qpsi(fzQ, fpQ, Qpsi)
-    Q3psi = calc_Qpsi(fzQ, fpQ, Q2psi)
-    Q4psi = calc_Qpsi(fzQ, fpQ, Q3psi)
-
-    # Evolve spin term c2 * F^2
-    for ii in range(len(Psi)):
-        Psi[ii] += Qfactor * Qpsi[ii] + Q2factor * Q2psi[ii] + Q3factor * Q3psi[ii] + Q4factor * Q4psi[ii]
-
-    print('Atom num after spin term: {}'.format(sum([dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi])))
-
-    # Evolve (c0+c4)*n^2 + (V + pm)*n:
-    for ii in range(len(Psi)):
-        mF = spin_f - ii
-        Psi[ii] *= cp.exp(-1j * dt * ((c0 + c4) * n + V + p * mF))
-
-    print('Atom num after last potential: {}'.format(sum([dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi])))
+    Psi = nonlin_evo(Psi[0], Psi[1], Psi[2], Psi[3], Psi[4], c0, c2, c4, V, p, dt, spin_f)
 
     # Kinetic evolution:
+    Psi = last_kinetic_evo(Psi, A, B, C)
+
+    # Renormalise  atom number:
     for ii in range(len(Psi)):
-        Psi[ii] = cp.fft.fftn(Psi[ii])
-        mF = spin_f - ii  # Calculate current component
-        Psi[ii] *= cp.exp(-0.25 * 1j * dt * (Kx ** 2 + Ky ** 2 + Kz ** 2 + 2 * mF ** 2 * q))  # Kinetic evolution
-
-    print('Atom num after last kinetic: {}'.format(sum([dx * dy * cp.sum(cp.abs(cp.fft.ifftn(wfn)) ** 2) for wfn in Psi])))
-
-    # Renormalise wavefunction:
-    for ii in range(len(Psi)):
-        Psi[ii] = cp.sqrt(N[ii] * Nx * Ny * Nz) * Psi[ii] / cp.sqrt(cp.sum(abs(Psi[ii]) ** 2))
-
-    print('Atom num after renorm: {}'.format(sum([dx * dy * cp.sum(cp.abs(cp.fft.ifftn(wfn)) ** 2) for wfn in Psi])))
-
-    print('======================================')
-
-    if i == 3:
-        exit()
+        Psi[ii] = cp.fft.fftn(cp.sqrt(N[ii]) * cp.fft.ifftn(Psi[ii]) / cp.sqrt(cp.sum(abs(cp.fft.ifftn(Psi[ii])) ** 2)))
 
 with h5py.File('test_data.hdf5', 'w') as file:
     file.create_dataset('wavefunction/psiP2', data=cp.asnumpy(cp.fft.ifftn(Psi[0])))
