@@ -196,7 +196,7 @@ Psi = [cp.fft.fftn(wfn) for wfn in Psi]  # Transforming wfn to Fourier space
 
 # Coefficients for kinetic evolution:
 Ek = cp.fft.fftshift(0.5 * (Kx ** 2 + Ky ** 2 + Kz ** 2))
-A = cp.exp(-1j * (Ek + 2 * q) * dt / 2)
+A = cp.exp(-1j * (Ek + 4 * q) * dt / 2)
 B = cp.exp(-1j * (Ek + q) * dt / 2)
 C = cp.exp(-1j * Ek * dt / 2)
 
