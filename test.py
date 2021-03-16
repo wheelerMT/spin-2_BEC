@@ -73,8 +73,6 @@ def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt, spin_f):
            psiM1 * cosT + 1j * (n * psiM1 + alpha * cp.conj(psiP1)) * sinT,
            psiM2 * cosT + 1j * (n * psiM2 - alpha * cp.conj(psiP2)) * sinT]
 
-    print('Atom num after spin-singlet: {}'.format(sum([dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi])))
-
     # Calculate spin vectors
     fp = cp.sqrt(6) * (Wfn[1] * cp.conj(Wfn[2]) + Wfn[2] * cp.conj(Wfn[3])) + 2 * (Wfn[3] * cp.conj(Wfn[4]) +
                                                                                    Wfn[0] * cp.conj(Wfn[1]))
@@ -100,14 +98,10 @@ def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt, spin_f):
     for ii in range(len(Wfn)):
         Wfn[ii] += Qfactor * Qpsi[ii] + Q2factor * Q2psi[ii] + Q3factor * Q3psi[ii] + Q4factor * Q4psi[ii]
 
-    print('Atom num after spin term: {}'.format(sum([dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi])))
-
     # Evolve (c0+c4)*n^2 + (V + pm)*n:
     for ii in range(len(Wfn)):
         mF = spin_f - ii
         Wfn[ii] *= cp.exp(-1j * dt * ((c0 + c4) * n + V + p * mF))
-
-    print('Atom num after density: {}'.format(sum([dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi])))
 
     return Wfn
 
@@ -197,7 +191,7 @@ beta_angle = 0.1
 gamma_angle = 0
 Psi = rotation(Psi, alpha_angle, beta_angle, gamma_angle)
 N = [dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi]  # Atom number of each component
-
+theta_fix = [cp.angle(wfn) for wfn in Psi]
 Psi = [cp.fft.fftn(wfn) for wfn in Psi]  # Transforming wfn to Fourier space
 
 # Coefficients for kinetic evolution:
@@ -218,9 +212,13 @@ for i in range(Nt):
     # Kinetic evolution:
     Psi = last_kinetic_evo(Psi, A, B, C)
 
-    # Renormalise  atom number:
+    # Renormalise  atom number and fix phase:
     for ii in range(len(Psi)):
         Psi[ii] = cp.fft.fftn(cp.sqrt(N[ii]) * cp.fft.ifftn(Psi[ii]) / cp.sqrt(cp.sum(abs(cp.fft.ifftn(Psi[ii])) ** 2)))
+        Psi[ii] = cp.fft.fftn(abs(cp.fft.ifftn(Psi[ii])) * cp.exp(1j * theta_fix[ii]))
+
+    if i % 100 == 0:
+        print('t = {}'.format(i * dt))
 
 with h5py.File('test_data.hdf5', 'w') as file:
     file.create_dataset('wavefunction/psiP2', data=cp.asnumpy(cp.fft.ifftn(Psi[0])))
