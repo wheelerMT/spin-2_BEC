@@ -58,20 +58,22 @@ def rotation(Wfn, alpha, beta, gamma):
 def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt, spin_f):
     # Calculate densities:
     n = abs(psiP2) ** 2 + abs(psiP1) ** 2 + abs(psi0) ** 2 + abs(psiM1) ** 2 + abs(psiM2) ** 2
-    alpha = psi0 ** 2 - 2 * psiP1 * psiM1 + 2 * psiP2 * psiM2
+    A00 = 1 / cp.sqrt(5) * (psi0 ** 2 - 2 * psiP1 * psiM1 + 2 * psiP2 * psiM2)
     fz = 2 * (abs(psiP2) ** 2 - abs(psiM2) ** 2) + abs(psiP1) ** 2 - abs(psiM1) ** 2
 
     # Evolve spin-singlet term -c4*(n^2-|alpha|^2)
-    S = cp.sqrt(n ** 2 - abs(alpha) ** 2)
+    S = cp.sqrt(n ** 2 - abs(A00) ** 2)
+    S = np.nan_to_num(S)
+
     cosT = cp.cos(c4 * S * dt)
     sinT = cp.sin(c4 * S * dt) / S
     sinT[S == 0] = 0  # Corrects division by 0
 
-    Wfn = [psiP2 * cosT + 1j * (n * psiP2 - alpha * cp.conj(psiM2)) * sinT,
-           psiP1 * cosT + 1j * (n * psiP1 + alpha * cp.conj(psiM1)) * sinT,
-           psi0 * cosT + 1j * (n * psi0 - alpha * cp.conj(psi0)) * sinT,
-           psiM1 * cosT + 1j * (n * psiM1 + alpha * cp.conj(psiP1)) * sinT,
-           psiM2 * cosT + 1j * (n * psiM2 - alpha * cp.conj(psiP2)) * sinT]
+    Wfn = [psiP2 * cosT + 1j * (n * psiP2 - A00 * cp.conj(psiM2)) * sinT,
+           psiP1 * cosT + 1j * (n * psiP1 + A00 * cp.conj(psiM1)) * sinT,
+           psi0 * cosT + 1j * (n * psi0 - A00 * cp.conj(psi0)) * sinT,
+           psiM1 * cosT + 1j * (n * psiM1 + A00 * cp.conj(psiP1)) * sinT,
+           psiM2 * cosT + 1j * (n * psiM2 - A00 * cp.conj(psiP2)) * sinT]
 
     # Calculate spin vectors
     fp = cp.sqrt(6) * (Wfn[1] * cp.conj(Wfn[2]) + Wfn[2] * cp.conj(Wfn[3])) + 2 * (Wfn[3] * cp.conj(Wfn[4]) +
@@ -132,12 +134,23 @@ def last_kinetic_evo(Psi, A, B, C):
 
     return Wfn
 
+
+def get_TF_density(c0, c2, V):
+    """ Get Thomas-Fermi profile using interaction parameters
+        for a spin-2 condensate."""
+    g = c0 + 4 * c2
+    Tf = (0.5 * (15 * g / (4 * np.pi)) ** 0.4 - V) / g
+    Tf = np.where(Tf < 0, 0, Tf)
+
+    return Tf
+
+
 # --------------------------------------------------------------------------------------------------------------------
 # Spatial and Potential parameters:
 # --------------------------------------------------------------------------------------------------------------------
 Nx, Ny, Nz = 64, 64, 64  # Number of grid points
 Mx, My, Mz = Nx // 2, Ny // 2, Nz // 2
-dx, dy, dz = 1, 1, 1  # Grid spacing
+dx, dy, dz = 0.5, 0.5, 0.5  # Grid spacing
 dkx, dky, dkz = np.pi / (Mx * dx), np.pi / (My * dy), np.pi / (Mz * dz)  # K-space spacing
 len_x, len_y, len_z = Nx * dx, Ny * dy, Nz * dz  # Box length
 
@@ -156,13 +169,13 @@ Kx, Ky, Kz = cp.meshgrid(kx, ky, kz, indexing='ij')
 
 # Controlled variables:
 spin_f = 2  # Spin-2
-omega_trap = 0.05
+omega_trap = 0.75
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
 q = -0.05  # Quadratic Zeeman
-c0 = 5000 / (Nx * Ny * Nz)
-c2 = 1000 / (Nx * Ny * Nz)
-c4 = -1000 / (Nx * Ny * Nz)
+c0 = 5000
+c2 = 1000
+c4 = -1000
 
 # Time steps, number and wavefunction save variables
 Nt = 1000
@@ -176,12 +189,14 @@ t = 0.
 # --------------------------------------------------------------------------------------------------------------------
 phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 
+Tf = get_TF_density(c0, c2, V)
+
 # Generate initial wavefunctions:
-psiP2 = 1 / cp.sqrt(2) * cp.ones((Nx, Ny, Nz))
+psiP2 = cp.sqrt(Tf / 2) * cp.ones((Nx, Ny, Nz))
 psiP1 = cp.zeros((Nx, Ny, Nz))
 psi0 = cp.zeros((Nx, Ny, Nz))
 psiM1 = cp.zeros((Nx, Ny, Nz))
-psiM2 = 1 / cp.sqrt(2) * cp.exp(1j * phi)
+psiM2 = cp.sqrt(Tf / 2) * cp.exp(1j * phi)
 
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 
@@ -207,6 +222,7 @@ for i in range(Nt):
     # Kinetic evolution:
     Psi = first_kinetic_evo(Psi, A, B, C)
 
+    # Non-linear evolution:
     Psi = nonlin_evo(Psi[0], Psi[1], Psi[2], Psi[3], Psi[4], c0, c2, c4, V, p, dt, spin_f)
 
     # Kinetic evolution:
