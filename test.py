@@ -28,7 +28,8 @@ Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
 
 # Controlled variables:
 spin_f = 2  # Spin-2
-omega_trap = 0.75
+omega_rot = 0.2
+omega_trap = 0.5
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
 q = -0.05  # Quadratic Zeeman
@@ -39,14 +40,13 @@ c4 = -1000
 # Time steps, number and wavefunction save variables
 Nt = 1000
 Nframe = 100  # Saves data every Nframe time steps
-eta = 1e-3
 dt = -1j * 1e-2  # Time step
 t = 0.
 
 # --------------------------------------------------------------------------------------------------------------------
 # Generating initial state:
 # --------------------------------------------------------------------------------------------------------------------
-phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
+phi = cp.arctan2(Y - 1, X - 1)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density(c0, c2, V)
 
@@ -79,18 +79,17 @@ C = cp.exp(-1j * Ek * dt / 2)
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
     # Kinetic evolution:
-    Psi = sm.first_kinetic_evo(Psi, A, B, C)
+    sm.first_kinetic_rot_evo(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, q, dt)
 
     # Non-linear evolution:
     Psi = sm.nonlin_evo(Psi[0], Psi[1], Psi[2], Psi[3], Psi[4], c0, c2, c4, V, p, dt, spin_f)
 
     # Kinetic evolution:
-    Psi = sm.last_kinetic_evo(Psi, A, B, C)
+    sm.last_kinetic_rot_evo(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, q, dt)
 
     # Renormalise  atom number and fix phase:
     for ii in range(len(Psi)):
         Psi[ii] = cp.fft.fftn(cp.sqrt(N[ii]) * cp.fft.ifftn(Psi[ii]) / cp.sqrt(cp.sum(abs(cp.fft.ifftn(Psi[ii])) ** 2)))
-        Psi[ii] = cp.fft.fftn(abs(cp.fft.ifftn(Psi[ii])) * cp.exp(1j * theta_fix[ii]))
 
     if i % 100 == 0:
         print('t = {}'.format(i * dt))
