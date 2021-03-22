@@ -106,35 +106,35 @@ def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt, spin_f):
     return Wfn
 
 
-def first_kinetic_evo(Psi, A, B, C):
+def first_kinetic_evo(Wfn, A, B, C):
     """ Calculates kinetic term and then Fourier
         transforms back in positional space. """
 
-    Wfn = [cp.fft.ifftn(A * Psi[0]),
-           cp.fft.ifftn(B * Psi[1]),
-           cp.fft.ifftn(C * Psi[2]),
-           cp.fft.ifftn(B * Psi[3]),
-           cp.fft.ifftn(A * Psi[4])]
+    Wfn = [cp.fft.ifftn(A * Wfn[0]),
+           cp.fft.ifftn(B * Wfn[1]),
+           cp.fft.ifftn(C * Wfn[2]),
+           cp.fft.ifftn(B * Wfn[3]),
+           cp.fft.ifftn(A * Wfn[4])]
 
     return Wfn
 
 
-def last_kinetic_evo(Psi, A, B, C):
+def last_kinetic_evo(Wfn, A, B, C):
     """ Fourier transforms wfn first, then
         calculates kinetic term, leaving it
         in k-space. """
 
-    Wfn = [A * cp.fft.fftn(Psi[0]),
-           B * cp.fft.fftn(Psi[1]),
-           C * cp.fft.fftn(Psi[2]),
-           B * cp.fft.fftn(Psi[3]),
-           A * cp.fft.fftn(Psi[4])]
+    Wfn = [A * cp.fft.fftn(Wfn[0]),
+           B * cp.fft.fftn(Wfn[1]),
+           C * cp.fft.fftn(Wfn[2]),
+           B * cp.fft.fftn(Wfn[3]),
+           A * cp.fft.fftn(Wfn[4])]
 
     return Wfn
 
 
 def get_TF_density(c0, c2, V):
-    """ Get Thomas-Fermi profile using interaction parameters
+    """ Get 3D Thomas-Fermi profile using interaction parameters
         for a spin-2 condensate."""
     g = c0 + 4 * c2
     Tf = (0.5 * (15 * g / (4 * cp.pi)) ** 0.4 - V) / g
