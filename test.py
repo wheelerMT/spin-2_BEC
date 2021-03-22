@@ -24,7 +24,7 @@ kx = cp.arange(-Mx, Mx) * dkx
 ky = cp.arange(-My, My) * dky
 kz = cp.arange(-Mz, Mz) * dkz
 Kx, Ky, Kz = cp.meshgrid(kx, ky, kz, indexing='ij')
-# Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
+Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
 
 # Controlled variables:
 spin_f = 2  # Spin-2
@@ -69,7 +69,7 @@ theta_fix = [cp.angle(wfn) for wfn in Psi]
 Psi = [cp.fft.fftn(wfn) for wfn in Psi]  # Transforming wfn to Fourier space
 
 # Coefficients for kinetic evolution:
-Ek = cp.fft.fftshift(0.5 * (Kx ** 2 + Ky ** 2 + Kz ** 2))
+Ek = 0.5 * (Kx ** 2 + Ky ** 2 + Kz ** 2)
 A = cp.exp(-1j * (Ek + 4 * q) * dt / 2)
 B = cp.exp(-1j * (Ek + q) * dt / 2)
 C = cp.exp(-1j * Ek * dt / 2)
