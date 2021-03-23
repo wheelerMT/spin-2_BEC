@@ -46,16 +46,18 @@ t = 0.
 # --------------------------------------------------------------------------------------------------------------------
 # Generating initial state:
 # --------------------------------------------------------------------------------------------------------------------
-phi = cp.arctan2(Y - 1, X - 1)  # Phase is azimuthal angle around the core
+phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density(c0, c2, V)
 
+eta = np.where(Z <= 0, 0, 1)  # Parameter used to interpolate between states
+
 # Generate initial wavefunctions:
-psiP2 = cp.sqrt(Tf / 2) * cp.ones((Nx, Ny, Nz))
+psiP2 = cp.sqrt(Tf) * cp.exp(1j * phi) * cp.sqrt((1 - eta ** 2) / 2)
 psiP1 = cp.zeros((Nx, Ny, Nz))
-psi0 = cp.zeros((Nx, Ny, Nz))
+psi0 = cp.sqrt(Tf) * eta
 psiM1 = cp.zeros((Nx, Ny, Nz))
-psiM2 = cp.sqrt(Tf / 2) * cp.exp(1j * phi)
+psiM2 = cp.sqrt(Tf) * cp.exp(1j * phi) * cp.sqrt((1 - eta ** 2) / 2)
 
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 
@@ -94,7 +96,7 @@ for i in range(Nt):
     if i % 100 == 0:
         print('t = {}'.format(i * dt))
 
-with h5py.File('test_data.hdf5', 'w') as file:
+with h5py.File('data/test_data.hdf5', 'w') as file:
     file.create_dataset('wavefunction/psiP2', data=cp.asnumpy(cp.fft.ifftn(Psi[0])))
     file.create_dataset('wavefunction/psiP1', data=cp.asnumpy(cp.fft.ifftn(Psi[1])))
     file.create_dataset('wavefunction/psi0', data=cp.asnumpy(cp.fft.ifftn(Psi[2])))
