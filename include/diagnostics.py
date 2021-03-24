@@ -1,8 +1,10 @@
-import numexpr as ne
+import numpy as np
+from numba import njit
 
-"""File containing functions for calculating certain diagnostics"""
+"""File containing functions for calculating certain diagnostics accellerated using numba"""
 
 
+@njit
 def calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2):
     """
     :param psiP2: psi_+2 component
@@ -13,14 +15,14 @@ def calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2):
     :return: fp, fz: perpendicular and longitudinal spin vectors
     """
 
-    fp = ne.evaluate("sqrt(6) * (psiP1 * conj(psi0) + psi0 * conj(psiM1)) "
-                     "+ 2 * (psiM1 * conj(psiM2) + psiP2 * conj(psiP1))")
-    fz = ne.evaluate("2 * (abs(psiP2).real ** 2 - abs(psiM2).real ** 2) "
-                     "+ abs(psiP1).real ** 2 - abs(psiM1).real ** 2")
+    fp = np.sqrt(6) * (psiP1 * np.conj(psi0) + psi0 * np.conj(psiM1)) + \
+         2 * (psiM1 * np.conj(psiM2) + psiP2 * np.conj(psiP1))
+    fz = 2 * (np.abs(psiP2).real ** 2 - np.abs(psiM2).real ** 2) + np.abs(psiP1).real ** 2 - np.abs(psiM1).real ** 2
 
     return fp, fz
 
 
+@njit
 def calc_a20(psiP2, psiP1, psi0, psiM1, psiM2):
     """
     :param psiP2: psi_+2 component
@@ -32,12 +34,13 @@ def calc_a20(psiP2, psiP1, psi0, psiM1, psiM2):
     """
 
     # Total density
-    n = abs(psiP2) ** 2 + abs(psiP1) ** 2 + abs(psi0) ** 2 + abs(psiM1) ** 2 + abs(psiM2) ** 2
+    n = np.abs(psiP2) ** 2 + np.abs(psiP1) ** 2 + np.abs(psi0) ** 2 + np.abs(psiM1) ** 2 + np.abs(psiM2) ** 2
 
     # Return a20
-    return ne.evaluate("1 / (sqrt(5) * n) * (2 * psiP2 * psiM2 - 2 * psiP1 * psiM1 + psi0 ** 2)")
+    return 1 / (np.sqrt(5) * n) * (2 * psiP2 * psiM2 - 2 * psiP1 * psiM1 + psi0 ** 2)
 
 
+@njit
 def calc_a30(psiP2, psiP1, psi0, psiM1, psiM2):
     """
     :param psiP2: psi_+2 component
@@ -49,8 +52,8 @@ def calc_a30(psiP2, psiP1, psi0, psiM1, psiM2):
     """
 
     # Total density
-    n = abs(psiP2) ** 2 + abs(psiP1) ** 2 + abs(psi0) ** 2 + abs(psiM1) ** 2 + abs(psiM2) ** 2
+    n = np.abs(psiP2) ** 2 + np.abs(psiP1) ** 2 + np.abs(psi0) ** 2 + np.abs(psiM1) ** 2 + np.abs(psiM2) ** 2
 
     # Return a30
-    return ne.evaluate("1 / (n * sqrt(n)) * (3 * np.sqrt(6) / 2 * (psiP1 ** 2 * psiM2 + psiM1 ** 2 * psiP2) "
-                       "+ psi0 * (psi0 ** 2 - 3 * psiP1 * psiM1 - 6 * psiP2 * psiM2))")
+    return 1 / (n * np.sqrt(n)) * (3 * np.sqrt(6) / 2 * (psiP1 ** 2 * psiM2 + psiM1 ** 2 * psiP2)
+                                   + psi0 * (psi0 ** 2 - 3 * psiP1 * psiM1 - 6 * psiP2 * psiM2))
