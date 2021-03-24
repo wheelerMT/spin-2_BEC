@@ -108,11 +108,11 @@ with h5py.File(data_path, 'w') as data:
     data.create_dataset('wavefunction/psiM2', (Nx, Ny, Nz, 1), maxshape=(Nx, Ny, Nz, None), dtype='complex64')
 
     # Store initial state
-    data.create_dataset('initial_state/psiP2', data=cp.asnumpy(cp.fft.ifft2(Psi[0])))
-    data.create_dataset('initial_state/psiP1', data=cp.asnumpy(cp.fft.ifft2(Psi[1])))
-    data.create_dataset('initial_state/psi0', data=cp.asnumpy(cp.fft.ifft2(Psi[2])))
-    data.create_dataset('initial_state/psiM1', data=cp.asnumpy(cp.fft.ifft2(Psi[3])))
-    data.create_dataset('initial_state/psiM2', data=cp.asnumpy(cp.fft.ifft2(Psi[4])))
+    data.create_dataset('initial_state/psiP2', data=cp.asnumpy(cp.fft.ifftn(Psi[0])))
+    data.create_dataset('initial_state/psiP1', data=cp.asnumpy(cp.fft.ifftn(Psi[1])))
+    data.create_dataset('initial_state/psi0', data=cp.asnumpy(cp.fft.ifftn(Psi[2])))
+    data.create_dataset('initial_state/psiM1', data=cp.asnumpy(cp.fft.ifftn(Psi[3])))
+    data.create_dataset('initial_state/psiM2', data=cp.asnumpy(cp.fft.ifftn(Psi[4])))
 
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -141,22 +141,22 @@ for i in range(Nt):
         with h5py.File(data_path, 'r+') as data:
             new_psiP2 = data['wavefunction/psiP2']
             new_psiP2.resize((Nx, Ny, Nz, k + 1))
-            new_psiP2[:, :, :, k] = cp.asnumpy(cp.fft.ifft2(Psi[0]))
+            new_psiP2[:, :, :, k] = cp.asnumpy(cp.fft.ifftn(Psi[0]))
 
             new_psiP1 = data['wavefunction/psiP1']
             new_psiP1.resize((Nx, Ny, Nz, k + 1))
-            new_psiP1[:, :, :, k] = cp.asnumpy(cp.fft.ifft2(Psi[1]))
+            new_psiP1[:, :, :, k] = cp.asnumpy(cp.fft.ifftn(Psi[1]))
 
             new_psi0 = data['wavefunction/psi0']
             new_psi0.resize((Nx, Ny, Nz, k + 1))
-            new_psi0[:, :, :, k] = cp.asnumpy(cp.fft.ifft2(Psi[2]))
+            new_psi0[:, :, :, k] = cp.asnumpy(cp.fft.ifftn(Psi[2]))
 
             new_psiM1 = data['wavefunction/psiM1']
             new_psiM1.resize((Nx, Ny, Nz, k + 1))
-            new_psiM1[:, :, :, k] = cp.asnumpy(cp.fft.ifft2(Psi[3]))
+            new_psiM1[:, :, :, k] = cp.asnumpy(cp.fft.ifftn(Psi[3]))
 
             new_psiM2 = data['wavefunction/psiM2']
             new_psiM2.resize((Nx, Ny, Nz, k + 1))
-            new_psiM2[:, :, :, k] = cp.asnumpy(cp.fft.ifft2(Psi[4]))
+            new_psiM2[:, :, :, k] = cp.asnumpy(cp.fft.ifftn(Psi[4]))
 
         k += 1  # Increment array index
