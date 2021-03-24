@@ -16,13 +16,13 @@ def calc_spin_vectors(Wfn):
 
     # Need to handle cases of differing dimensionality differently
     if Wfn[0].ndim == 4:  # Multiple frames of data
-        numFrames = Wfn[0].shape[-1]  # Number of frames of data
+        num_frames = Wfn[0].shape[-1]  # Number of frames of data
 
         # Calculate spin vectors:
-        fp = np.empty((Nx, Ny, Nz, numFrames))
-        fz = np.empty((Nx, Ny, Nz, numFrames))
+        fp = np.empty((Nx, Ny, Nz, num_frames))
+        fz = np.empty((Nx, Ny, Nz, num_frames))
 
-        for i in numFrames:
+        for i in num_frames:
             # Pull out wfn's frame by frame
             psiP2, psiP1, psi0, psiM1, psiM2 = Wfn[0][:, :, :, i], Wfn[1][:, :, :, i], Wfn[2][:, :, :, i], \
                                                Wfn[3][:, :, :, i], Wfn[4][:, :, :, i]
@@ -41,4 +41,21 @@ def calc_spin_vectors(Wfn):
                          "+ abs(psiP1).real ** 2 - abs(psiM1).real ** 2")
 
         return fp, fz
+
+
+def calc_a20(psiP2, psiP1, psi0, psiM1, psiM2):
+    """
+    :param psiP2: psi_+2 component
+    :param psiP1: psi_+1 component
+    :param psi0: psi_0 component
+    :param psiM1: psi_-1 component
+    :param psiM2: psi_-2 component
+    :return: a20, spin-singlet duo
+    """
+
+    # Total density
+    n = abs(psiP2) ** 2 + abs(psiP1) ** 2 + abs(psi0) ** 2 + abs(psiM1) ** 2 + abs(psiM2) ** 2
+
+    # Return a20
+    return 1 / (np.sqrt(5) * n) * (2 * psiP2 * psiM2 - 2 * psiP1 * psiM1 + psi0 ** 2)
 
