@@ -23,14 +23,14 @@ def calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2):
 
 
 @njit
-def calc_a20(psiP2, psiP1, psi0, psiM1, psiM2):
+def calc_spin_singlet_duo(psiP2, psiP1, psi0, psiM1, psiM2):
     """
     :param psiP2: psi_+2 component
     :param psiP1: psi_+1 component
     :param psi0: psi_0 component
     :param psiM1: psi_-1 component
     :param psiM2: psi_-2 component
-    :return: a20, spin-singlet pair
+    :return: a20, spin-singlet duo
     """
 
     # Total density
@@ -41,7 +41,7 @@ def calc_a20(psiP2, psiP1, psi0, psiM1, psiM2):
 
 
 @njit
-def calc_a30(psiP2, psiP1, psi0, psiM1, psiM2):
+def calc_spin_singlet_trio(psiP2, psiP1, psi0, psiM1, psiM2):
     """
     :param psiP2: psi_+2 component
     :param psiP1: psi_+1 component
