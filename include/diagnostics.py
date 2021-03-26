@@ -6,7 +6,6 @@ from numba import njit
 
 def calc_density(psiP2, psiP1, psi0, psiM1, psiM2):
     """
-
     :param psiP2: psi_+2 component
     :param psiP1: psi_+1 component
     :param psi0: psi_0 component
@@ -34,6 +33,22 @@ def calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2):
     fz = 2 * (np.abs(psiP2).real ** 2 - np.abs(psiM2).real ** 2) + np.abs(psiP1).real ** 2 - np.abs(psiM1).real ** 2
 
     return fp, fz
+
+
+def normalise_wfn(psiP2, psiP1, psi0, psiM1, psiM2):
+    """
+    :param psiP2: psi_+2 component
+    :param psiP1: psi_+1 component
+    :param psi0: psi_0 component
+    :param psiM1: psi_-1 component
+    :param psiM2: psi_-2 component
+    :return: Normalised wavefunction components (same order as input)
+    """
+
+    # Density
+    n = calc_density(psiP2, psiP1, psi0, psiM1, psiM2)
+
+    return psiP2 / np.sqrt(n), psiP1 / np.sqrt(n), psi0 / np.sqrt(n), psiM1 / np.sqrt(n), psiM2 / np.sqrt(n)
 
 
 @njit
