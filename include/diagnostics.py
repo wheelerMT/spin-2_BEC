@@ -4,6 +4,20 @@ from numba import njit
 """File containing functions for calculating certain diagnostics accellerated using numba"""
 
 
+def calc_density(psiP2, psiP1, psi0, psiM1, psiM2):
+    """
+
+    :param psiP2: psi_+2 component
+    :param psiP1: psi_+1 component
+    :param psi0: psi_0 component
+    :param psiM1: psi_-1 component
+    :param psiM2: psi_-2 component
+    :return: n: total atomic density
+    """
+
+    return abs(psiP2) ** 2 + abs(psiP1) ** 2 + abs(psi0) ** 2 + abs(psiM1) ** 2 + abs(psiM2) ** 2
+
+
 @njit
 def calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2):
     """
