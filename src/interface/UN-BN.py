@@ -16,28 +16,28 @@ len_x, len_y, len_z = Nx * dx, Ny * dy, Nz * dz  # Box length
 x = cp.arange(-Mx, Mx) * dx
 y = cp.arange(-My, My) * dy
 z = cp.arange(-Mz, Mz) * dz
-X, Y, Z = cp.meshgrid(x, y, z, indexing='ij')
+X, Y, Z = cp.meshgrid(x, y, z)
 
 # Generate 1-D k-space grids:
 kx = cp.arange(-Mx, Mx) * dkx
 ky = cp.arange(-My, My) * dky
 kz = cp.arange(-Mz, Mz) * dkz
-Kx, Ky, Kz = cp.meshgrid(kx, ky, kz, indexing='ij')
+Kx, Ky, Kz = cp.meshgrid(kx, ky, kz)
 Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
 
 # Controlled variables:
 spin_f = 2  # Spin-2
 omega_rot = 0.2
-omega_trap = 0.5
+omega_trap = 1
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
-q = -0.05  # Quadratic Zeeman
+q = np.where(Z <= 0, -0.05, 0.05)  # Quadratic Zeeman
 c0 = 5000
 c2 = 1000
 c4 = -1000
 
 # Time steps, number and wavefunction save variables
-Nt = 1000
+Nt = 2000
 Nframe = 50  # Saves data every Nframe time steps
 dt = -1j * 1e-2  # Time step
 t = 0.
@@ -52,11 +52,11 @@ Tf = sm.get_TF_density(c0, c2, V)
 eta = np.where(Z <= 0, 0, 1)  # Parameter used to interpolate between states
 
 # Generate initial wavefunctions:
-psiP2 = cp.sqrt(Tf) * cp.exp(1j * phi) * cp.sqrt((1 - eta ** 2) / 2)
+psiP2 = cp.sqrt(Tf) * cp.sqrt((1 - eta ** 2) / 2)
 psiP1 = cp.zeros((Nx, Ny, Nz))
 psi0 = cp.sqrt(Tf) * eta
 psiM1 = cp.zeros((Nx, Ny, Nz))
-psiM2 = cp.sqrt(Tf) * cp.exp(1j * phi) * cp.sqrt((1 - eta ** 2) / 2)
+psiM2 = cp.sqrt(Tf) * cp.sqrt((1 - eta ** 2) / 2)
 
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 
@@ -83,8 +83,8 @@ parameters = {
 }
 
 # Create dataset and save initial state
-filename = 'UN-BN'  # Name of file to save data to
-data_path = 'data/{}.hdf5'.format(filename)
+filename = 'UN-BN_interface'  # Name of file to save data to
+data_path = '../../data/{}.hdf5'.format(filename)
 k = 0  # Array index
 
 with h5py.File(data_path, 'w') as data:
