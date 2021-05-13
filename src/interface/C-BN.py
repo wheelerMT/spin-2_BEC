@@ -16,13 +16,13 @@ len_x, len_y, len_z = Nx * dx, Ny * dy, Nz * dz  # Box length
 x = cp.arange(-Mx, Mx) * dx
 y = cp.arange(-My, My) * dy
 z = cp.arange(-Mz, Mz) * dz
-X, Y, Z = cp.meshgrid(x, y, z)
+X, Y, Z = cp.meshgrid(x, y, z, indexing='ij')
 
 # Generate 1-D k-space grids:
 kx = cp.arange(-Mx, Mx) * dkx
 ky = cp.arange(-My, My) * dky
 kz = cp.arange(-Mz, Mz) * dkz
-Kx, Ky, Kz = cp.meshgrid(kx, ky, kz)
+Kx, Ky, Kz = cp.meshgrid(kx, ky, kz, indexing='ij')
 Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
 
 # Controlled variables:
