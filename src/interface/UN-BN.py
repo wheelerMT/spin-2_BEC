@@ -37,7 +37,7 @@ c2 = 1000
 c4 = -1000
 
 # Time steps, number and wavefunction save variables
-Nt = 2000
+Nt = 2500
 Nframe = 50  # Saves data every Nframe time steps
 dt = -1j * 1e-2  # Time step
 t = 0.
