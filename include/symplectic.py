@@ -217,7 +217,7 @@ def last_kinetic_rot_evo_2d(Wfn, X, Y, Kx, Ky, omega, spin_f, q, dt):
         Wfn[ii] = cp.fft.fft(Wfn[ii], axis=1)
 
 
-def get_TF_density(c0, c2, V):
+def get_TF_density_3d(c0, c2, V):
     """ Get 3D Thomas-Fermi profile using interaction parameters
         for a spin-2 condensate."""
     g = c0 + 4 * c2
