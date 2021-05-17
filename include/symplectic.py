@@ -133,7 +133,7 @@ def last_kinetic_evo(Wfn, A, B, C):
     return Wfn
 
 
-def first_kinetic_rot_evo(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, q, dt):
+def first_kinetic_rot_evo_3d(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, q, dt):
     for ii in range(len(Wfn)):
         mF = spin_f - ii
 
@@ -154,7 +154,7 @@ def first_kinetic_rot_evo(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, q, dt):
         Wfn[ii] = cp.fft.ifftn(Wfn[ii], axes=(1, 2))
 
 
-def last_kinetic_rot_evo(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, q, dt):
+def last_kinetic_rot_evo_3d(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, q, dt):
     for ii in range(len(Wfn)):
         mF = spin_f - ii
 

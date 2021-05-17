@@ -120,13 +120,13 @@ with h5py.File(data_path, 'w') as data:
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
     # Kinetic evolution:
-    sm.first_kinetic_rot_evo(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, q, dt)
+    sm.first_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, q, dt)
 
     # Non-linear evolution:
     Psi = sm.nonlin_evo(Psi[0], Psi[1], Psi[2], Psi[3], Psi[4], c0, c2, c4, V, p, dt, spin_f)
 
     # Kinetic evolution:
-    sm.last_kinetic_rot_evo(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, q, dt)
+    sm.last_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, q, dt)
 
     # Renormalise  atom number and fix phase:
     for ii in range(len(Psi)):
