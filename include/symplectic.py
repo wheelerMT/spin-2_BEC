@@ -175,6 +175,48 @@ def last_kinetic_rot_evo_3d(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, q, dt):
         Wfn[ii] = cp.fft.fft(Wfn[ii], axis=1)
 
 
+def first_kinetic_rot_evo_2d(Wfn, X, Y, Kx, Ky, omega, spin_f, q, dt):
+    for ii in range(len(Wfn)):
+        mF = spin_f - ii
+
+        # IFFT over y, so we are in x direction
+        Wfn[ii] = cp.fft.ifft(Wfn[ii], axis=1)
+
+        # Compute first coefficient rotation
+        Wfn[ii] *= cp.exp(-1j * dt * (2 * Kx ** 2 + 4 * omega * Y * Kx + mF ** 2 * q / 2) / 8)
+
+        # IFFT over x, FFT over y, so we are in y direction
+        Wfn[ii] = cp.fft.ifft(Wfn[ii], axis=0)
+        Wfn[ii] = cp.fft.fft(Wfn[ii], axis=1)
+
+        # Compute second coefficient rotation:
+        Wfn[ii] *= cp.exp(-1j * dt * (2 * Ky ** 2 - 4 * omega * X * Ky + mF ** 2 * q / 2) / 8)
+
+        # IFFT over y so all axes are in position space
+        Wfn[ii] = cp.fft.ifft(Wfn[ii], axis=1)
+
+
+def last_kinetic_rot_evo_2d(Wfn, X, Y, Kx, Ky, omega, spin_f, q, dt):
+    for ii in range(len(Wfn)):
+        mF = spin_f - ii
+
+        # FFT over y, so we are in y and z directions
+        Wfn[ii] = cp.fft.fft(Wfn[ii], axis=1)
+
+        # Compute second coefficient rotation
+        Wfn[ii] *= cp.exp(-1j * dt * (2 * Ky ** 2 - 4 * omega * X * Ky + mF ** 2 * q / 2) / 8)
+
+        # IFFT over y and FFT over x, so we are in x and z directions
+        Wfn[ii] = cp.fft.ifft(Wfn[ii], axis=1)
+        Wfn[ii] = cp.fft.fft(Wfn[ii], axis=0)
+
+        # Compute first coefficient rotation
+        Wfn[ii] *= cp.exp(-1j * dt * (2 * Kx ** 2 + 4 * omega * Y * Kx + mF ** 2 * q / 2) / 8)
+
+        # FFT over y, so all axes are in Fourier space
+        Wfn[ii] = cp.fft.fft(Wfn[ii], axis=1)
+
+
 def get_TF_density(c0, c2, V):
     """ Get 3D Thomas-Fermi profile using interaction parameters
         for a spin-2 condensate."""
