@@ -47,7 +47,7 @@ t = 0.
 # --------------------------------------------------------------------------------------------------------------------
 phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 
-Tf = sm.get_TF_density_3d(c0, c2, V)
+Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
 eta = np.where(Z <= 0, 1, 0)  # Parameter used to interpolate between states
 
