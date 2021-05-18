@@ -24,19 +24,19 @@ def rotation(Wfn, alpha, beta, gamma):
 
     U[1, 0] = 2 * cp.exp(-1j * (alpha + 2 * gamma)) * C ** 3 * S
     U[1, 1] = cp.exp(-1j * (alpha + gamma)) * C ** 2 * (C ** 2 - 3 * S ** 2)
-    U[1, 2] = -cp.sqrt(3/8) * cp.exp(-1j * alpha) * cp.sin(2 * beta)
+    U[1, 2] = -cp.sqrt(3 / 8) * cp.exp(-1j * alpha) * cp.sin(2 * beta)
     U[1, 3] = -cp.exp(-1j * (alpha - gamma)) * S ** 2 * (S ** 2 - 3 * C ** 2)
     U[1, 4] = - 2 * cp.exp(-1j * (alpha - 2 * gamma)) * C * S ** 3
 
     U[2, 0] = cp.sqrt(6) * cp.exp(-2j * gamma) * C ** 2 * S ** 2
-    U[2, 1] = cp.sqrt(3/8) * cp.exp(-1j * gamma) * cp.sin(2 * beta)
+    U[2, 1] = cp.sqrt(3 / 8) * cp.exp(-1j * gamma) * cp.sin(2 * beta)
     U[2, 2] = 1 / 4 * (1 + 3 * cp.cos(2 * beta))
-    U[2, 3] = -cp.sqrt(3/8) * cp.exp(1j * gamma) * cp.sin(2 * beta)
+    U[2, 3] = -cp.sqrt(3 / 8) * cp.exp(1j * gamma) * cp.sin(2 * beta)
     U[2, 4] = cp.sqrt(6) * cp.exp(2j * gamma) * C ** 2 * S ** 2
 
     U[3, 0] = 2 * cp.exp(2j * (alpha - 2 * gamma)) * C * S ** 3
     U[3, 1] = -cp.exp(1j * (alpha - gamma)) * S ** 2 * (S ** 2 - 3 * C ** 2)
-    U[3, 2] = cp.sqrt(3/8) * cp.exp(1j * alpha) * cp.sin(2 * beta)
+    U[3, 2] = cp.sqrt(3 / 8) * cp.exp(1j * alpha) * cp.sin(2 * beta)
     U[3, 3] = cp.exp(1j * (alpha + gamma)) * C ** 2 * (C ** 2 - 3 * S ** 2)
     U[3, 4] = - 2 * cp.exp(1j * (alpha + 2 * gamma)) * C ** 3 * S
 
@@ -48,7 +48,8 @@ def rotation(Wfn, alpha, beta, gamma):
 
     new_Wfn = []
     for jj in range(len(Wfn)):
-        new_Wfn.append(U[jj, 0] * Wfn[0] + U[jj, 1] * Wfn[1] + U[jj, 2] * Wfn[2] + U[jj, 3] * Wfn[3] + U[jj, 4] * Wfn[4])
+        new_Wfn.append(
+            U[jj, 0] * Wfn[0] + U[jj, 1] * Wfn[1] + U[jj, 2] * Wfn[2] + U[jj, 3] * Wfn[3] + U[jj, 4] * Wfn[4])
 
     return new_Wfn
 
@@ -81,10 +82,10 @@ def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt, spin_f):
     # Calculate cos, sin and Qfactor terms:
     C1, S1 = cp.cos(c2 * F * dt), cp.sin(c2 * F * dt)
     C2, S2 = cp.cos(2 * c2 * F * dt), cp.sin(2 * c2 * F * dt)
-    Qfactor = 1j * (-4/3 * S1 + 1 / 6 * S2)
-    Q2factor = (-5/4 + 4/3 * C1 - 1/12 * C2)
-    Q3factor = 1j * (1/3 * S1 - 1/6 * S2)
-    Q4factor = (1/4 - 1/3 * C1 + 1/12 * C2)
+    Qfactor = 1j * (-4 / 3 * S1 + 1 / 6 * S2)
+    Q2factor = (-5 / 4 + 4 / 3 * C1 - 1 / 12 * C2)
+    Q3factor = 1j * (1 / 3 * S1 - 1 / 6 * S2)
+    Q4factor = (1 / 4 - 1 / 3 * C1 + 1 / 12 * C2)
 
     fzQ = fz / F
     fpQ = fp / F
@@ -217,11 +218,27 @@ def last_kinetic_rot_evo_2d(Wfn, X, Y, Kx, Ky, omega, spin_f, q, dt):
         Wfn[ii] = cp.fft.fft(Wfn[ii], axis=1)
 
 
-def get_TF_density_3d(c0, c2, V):
+def get_TF_density_3d(c0, c2, X, Y, Z, N):
     """ Get 3D Thomas-Fermi profile using interaction parameters
         for a spin-2 condensate."""
     g = c0 + 4 * c2
-    Tf = (0.5 * (15 * g / (4 * cp.pi)) ** 0.4 - V) / g
-    Tf = cp.where(Tf < 0, 0, Tf)
+    Rtf = (15 * N * g / (4 * cp.pi)) ** 0.2
 
-    return Tf
+    r2 = X ** 2 + Y ** 2 + Z ** 2
+    Tf_dens = 15 * N / (8 * cp.pi * Rtf ** 2) * (1 - r2 / Rtf ** 2)
+    Tf_dens = cp.where(Tf_dens < 0, 0, Tf_dens)
+
+    return Tf_dens
+
+
+def get_TF_density_2d(c0, c2, X, Y, N):
+    """ Get 2D Thomas-Fermi profile using interaction parameters
+        for a spin-2 condensate."""
+    g = c0 + 4 * c2
+    Rtf = (8 * N * g / cp.pi) ** 0.25
+
+    r2 = X ** 2 + Y ** 2
+    Tf_dens = 4 * N / (cp.pi * Rtf ** 2) * (1 - r2 / Rtf ** 2)
+    Tf_dens = cp.where(Tf_dens < 0, 0, Tf_dens)
+
+    return Tf_dens
