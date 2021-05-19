@@ -87,8 +87,8 @@ def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt, spin_f):
     Q3factor = 1j * (1 / 3 * S1 - 1 / 6 * S2)
     Q4factor = (1 / 4 - 1 / 3 * C1 + 1 / 12 * C2)
 
-    fzQ = fz / F
-    fpQ = fp / F
+    fzQ = cp.nan_to_num(fz / F)
+    fpQ = cp.nan_to_num(fp / F)
 
     Qpsi = calc_Qpsi(fzQ, fpQ, Wfn)
     Q2psi = calc_Qpsi(fzQ, fpQ, Qpsi)
