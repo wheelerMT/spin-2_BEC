@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit
 
-"""File containing functions for calculating certain diagnostics accellerated using numba"""
+"""File containing functions for calculating certain diagnostics accelerated using numba"""
 
 
 def calc_density(Wfn):
