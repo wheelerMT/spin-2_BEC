@@ -6,7 +6,7 @@ from numba import njit
 
 def calc_density(Wfn):
     """
-    :param Wfn: List, each component is Nx x Ny x Nz wavefunction
+    :param Wfn: List, each element is a wavefunction component starting with psi_+2
     :return: n: total atomic density
     """
 
@@ -15,7 +15,7 @@ def calc_density(Wfn):
 
 def normalise_wfn(Wfn):
     """
-    :param Wfn: List, each component is Nx x Ny x Nz wavefunction
+    :param Wfn: List, each element is a wavefunction component starting with psi_+2
     :return: Normalised 5 x 1 wavefunction
     """
 
