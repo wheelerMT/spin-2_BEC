@@ -28,9 +28,9 @@ spin_f = 2  # Spin-2
 V = 0.
 p = 0  # Linear Zeeman
 q = -0.05  # Quadratic Zeeman
-c0 = 5
-c2 = 1
-c4 = -1
+c0 = 1
+c2 = 0.5
+c4 = -0.5
 
 # Time steps, number and wavefunction save variables
 Nt = 2500
@@ -39,7 +39,7 @@ dt = -1j * 1e-2  # Time step
 t = 0.
 
 # Kinetic subsystem coefficients:
-Ek = 0.5 * (Kx ** 2 + Ky ** 2)
+Ek = Kx ** 2 + Ky ** 2
 A = cp.exp(-1j * (Ek + 4 * q) * dt)
 B = cp.exp(-1j * (Ek + q) * dt)
 C = cp.exp(-1j * Ek * dt)
