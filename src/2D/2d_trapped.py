@@ -2,7 +2,6 @@ import numpy as np
 import cupy as cp
 import include.symplectic as sm
 import h5py
-import matplotlib.pyplot as plt
 
 # --------------------------------------------------------------------------------------------------------------------
 # Spatial and Potential parameters:
@@ -48,14 +47,12 @@ phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_2d(c0, c2, X, Y, N=1)
 
-eta = np.where(Y <= 0, 0, 1)  # Parameter used to interpolate between states
-
 # Generate initial wavefunctions:
 psiP2 = cp.sqrt(Tf) / cp.sqrt(2) * cp.ones((Nx, Ny))
 psiP1 = cp.zeros((Nx, Ny))
 psi0 = cp.zeros((Nx, Ny))
 psiM1 = cp.zeros((Nx, Ny))
-psiM2 = cp.sqrt(Tf) / cp.sqrt(2) * cp.ones((Nx, Ny))
+psiM2 = cp.sqrt(Tf) / cp.sqrt(2) * cp.exp(1j * phi) * cp.ones((Nx, Ny))
 
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 
@@ -83,7 +80,7 @@ parameters = {
 }
 
 # Create dataset and save initial state
-filename = '2d_interface'  # Name of file to save data to
+filename = '2d_trapped'  # Name of file to save data to
 data_path = '../../data/2D/{}.hdf5'.format(filename)
 k = 0  # Array index
 
@@ -134,8 +131,6 @@ for i in range(Nt):
 
     if i % 100 == 0:
         print('t = {}'.format(i * dt))
-        # plt.contourf(cp.asnumpy(cp.abs(cp.fft.ifftn(Psi[0])) ** 2), levels=100)
-        # plt.show()
 
     # Saves data
     if np.mod(i + 1, Nframe) == 0:
