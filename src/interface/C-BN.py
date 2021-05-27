@@ -84,13 +84,14 @@ parameters = {
 
 # Create dataset and save initial state
 filename = 'C-BN_interface'  # Name of file to save data to
-data_path = '../../data/{}.hdf5'.format(filename)
+data_path = '../../data/3D/{}.hdf5'.format(filename)
 k = 0  # Array index
 
 with h5py.File(data_path, 'w') as data:
     # Saving spatial data:
     data.create_dataset('grid/x', x.shape, data=cp.asnumpy(x))
     data.create_dataset('grid/y', y.shape, data=cp.asnumpy(y))
+    data.create_dataset('grid/z', z.shape, data=cp.asnumpy(z))
 
     # Saving time variables:
     data.create_dataset('time/Nt', data=Nt)
