@@ -31,10 +31,10 @@ omega_rot = 0.2
 omega_trap = 1
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0.  # Linear Zeeman
-q = -0.05  # Quadratic Zeeman
-c0 = 5000
-c2 = np.where(Z <= 0, 1000, -1000)
-c4 = 1000
+q = 0  # Quadratic Zeeman
+c0 = 1000
+c2 = np.where(Z <= 0, 10, -10)
+c4 = 250
 
 # Time steps, number and wavefunction save variables
 Nt = 2500
@@ -83,7 +83,7 @@ parameters = {
 }
 
 # Create dataset and save initial state
-filename = 'C-FM_interface'  # Name of file to save data to
+filename = 'C-FM=2_interface'  # Name of file to save data to
 data_path = '../../data/3D/{}.hdf5'.format(filename)
 k = 0  # Array index
 
