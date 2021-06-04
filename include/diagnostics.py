@@ -45,7 +45,7 @@ def calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2):
 
     fp = np.sqrt(6) * (psiP1 * np.conj(psi0) + psi0 * np.conj(psiM1)) + \
          2 * (psiM1 * np.conj(psiM2) + psiP2 * np.conj(psiP1))
-    fz = 2 * (np.abs(psiP2).real ** 2 - np.abs(psiM2).real ** 2) + np.abs(psiP1).real ** 2 - np.abs(psiM1).real ** 2
+    fz = 2 * (np.abs(psiP2) ** 2 - np.abs(psiM2) ** 2) + np.abs(psiP1) ** 2 - np.abs(psiM1) ** 2
 
     return fp, fz
 
