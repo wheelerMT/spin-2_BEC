@@ -50,7 +50,7 @@ a20 = diag.calc_spin_singlet_duo(Zeta[0], Zeta[1], Zeta[2], Zeta[3], Zeta[4])
 a30 = diag.calc_spin_singlet_trio(Zeta[0], Zeta[1], Zeta[2], Zeta[3], Zeta[4])
 
 # Generate figure:
-fig = plt.figure(figsize=(12, 4.8))
+fig = plt.figure(figsize=(12, 10))
 grid = ImageGrid(fig, 111,  # as in plt.subplot(111)
                  nrows_ncols=(3, 3),
                  axes_pad=0.4,
@@ -64,10 +64,17 @@ grid = ImageGrid(fig, 111,  # as in plt.subplot(111)
 for axis in grid:
     axis.set_aspect('equal')
 
+# y and z indices for graphs:
+y_ind = Ny // 2
+z_upper_ind = Ny // 2 + 10
+z_lower_ind = Nz // 2 - 10
+
 # Plot titles:
 grid[0].set_title(r'$|<\vec{F}>|$')
 grid[1].set_title(r'$|A_{20}|^2$')
 grid[2].set_title(r'$|A_{30}|^2$')
+grid[3].set_title(r'Z = {}'.format(z[z_upper_ind]), x=0.2, fontsize=10)
+grid[6].set_title(r'Z = {}'.format(z[z_lower_ind]), x=0.2, fontsize=10)
 
 # Plot axis labels:
 grid[0].set_ylabel(r'$z/\ell$')
@@ -84,27 +91,27 @@ for axis in [grid[0], grid[1], grid[2]]:
 # ------------------------------------------------------------------
 
 # First row:
-one_spin_plot = grid[0].contourf(X[:, Nx // 2, :], Z[:, Nx // 2, :], abs(spin_expec[:, Nx // 2, :]),
+one_spin_plot = grid[0].contourf(X[:, y_ind, :], Z[:, y_ind, :], abs(spin_expec[:, y_ind, :]),
                                  np.linspace(0, 2, 100), cmap='jet')
-one_a20_plot = grid[1].contourf(X[:, Nx // 2, :], Z[:, Nx // 2, :], abs(a20[:, Nx // 2, :]) ** 2,
+one_a20_plot = grid[1].contourf(X[:, y_ind, :], Z[:, y_ind, :], abs(a20[:, y_ind, :]) ** 2,
                                 np.linspace(0, 1 / 5, 100), cmap='jet')
-one_a30_plot = grid[2].contourf(X[:, Nx // 2, :], Z[:, Nx // 2, :], abs(a30[:, Nx // 2, :]) ** 2,
+one_a30_plot = grid[2].contourf(X[:, y_ind, :], Z[:, y_ind, :], abs(a30[:, y_ind, :]) ** 2,
                                 np.linspace(0, 2, 100), cmap='jet')
 
 # Second row:
-two_spin_plot = grid[3].contourf(X[:, :, Nx // 2 + 10], Y[:, :, Nx // 2 + 10], abs(spin_expec[:, :, Nx // 2 + 10]),
+two_spin_plot = grid[3].contourf(X[:, :, z_upper_ind], Y[:, :, z_upper_ind], abs(spin_expec[:, :, z_upper_ind]),
                                  np.linspace(0, 2, 100), cmap='jet')
-two_a20_plot = grid[4].contourf(X[:, :, Nx // 2 + 10], Y[:, :, Nx // 2 + 10], abs(a20[:, :, Nx // 2 + 10]) ** 2,
+two_a20_plot = grid[4].contourf(X[:, :, z_upper_ind], Y[:, :, z_upper_ind], abs(a20[:, :, z_upper_ind]) ** 2,
                                 np.linspace(0, 1 / 5, 100), cmap='jet')
-two_a30_plot = grid[5].contourf(X[:, :, Nx // 2 + 10], Y[:, :, Nx // 2 + 10], abs(a30[:, :, Nx // 2 + 10]) ** 2,
+two_a30_plot = grid[5].contourf(X[:, :, z_upper_ind], Y[:, :, z_upper_ind], abs(a30[:, :, z_upper_ind]) ** 2,
                                 np.linspace(0, 2, 100), cmap='jet')
 
 # Third row:
-three_spin_plot = grid[6].contourf(X[:, :, Nx // 2 - 10], Y[:, :, Nx // 2 - 10], abs(spin_expec[:, :, Nx // 2 - 10]),
+three_spin_plot = grid[6].contourf(X[:, :, z_lower_ind], Y[:, :, z_lower_ind], abs(spin_expec[:, :, z_lower_ind]),
                                    np.linspace(0, 2, 100), cmap='jet')
-three_a20_plot = grid[7].contourf(X[:, :, Nx // 2 - 10], Y[:, :, Nx // 2 - 10], abs(a20[:, :, Nx // 2 - 10]) ** 2,
+three_a20_plot = grid[7].contourf(X[:, :, z_lower_ind], Y[:, :, z_lower_ind], abs(a20[:, :, z_lower_ind]) ** 2,
                                   np.linspace(0, 1 / 5, 100), cmap='jet')
-three_a30_plot = grid[8].contourf(X[:, :, Nx // 2 - 10], Y[:, :, Nx // 2 - 10], abs(a30[:, :, Nx // 2 - 10]) ** 2,
+three_a30_plot = grid[8].contourf(X[:, :, z_lower_ind], Y[:, :, z_lower_ind], abs(a30[:, :, z_lower_ind]) ** 2,
                                   np.linspace(0, 2, 100), cmap='jet')
 
 # Set colorbars
@@ -119,4 +126,5 @@ for i, contour in enumerate([one_a30_plot, two_a30_plot, three_a30_plot]):
     grid[(i * 3) + 2].cax.toggle_label(True)
 
 plt.tight_layout()
+plt.savefig('../../data/plots/{}.png'.format(data_path), bbox_inches="tight")
 plt.show()
