@@ -8,7 +8,7 @@ import h5py
 # --------------------------------------------------------------------------------------------------------------------
 Nx, Ny, Nz = 64, 64, 64  # Number of grid points
 Mx, My, Mz = Nx // 2, Ny // 2, Nz // 2
-dx, dy, dz = 0.5, 0.5, 0.5  # Grid spacing
+dx, dy, dz = 20 / Nx, 20 / Ny, 20 / Nz  # Grid spacing
 dkx, dky, dkz = np.pi / (Mx * dx), np.pi / (My * dy), np.pi / (Mz * dz)  # K-space spacing
 len_x, len_y, len_z = Nx * dx, Ny * dy, Nz * dz  # Box length
 
@@ -32,9 +32,9 @@ omega_trap = 1
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0.  # Linear Zeeman
 q = np.where(Z <= 0, 0, -0.05)  # Quadratic Zeeman
-c0 = 1000
-c2 = np.where(Z <= 0, 10, 200)
-c4 = np.where(Z <= 0, 250, -200)
+c0 = 5000
+c2 = np.where(Z <= 0, 1000, 800)
+c4 = np.where(Z <= 0, 1000, -800)
 
 # Time steps, number and wavefunction save variables
 Nt = 2500
