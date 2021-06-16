@@ -242,3 +242,41 @@ def get_TF_density_2d(c0, c2, X, Y, N):
     Tf_dens = cp.where(Tf_dens < 0, 0, Tf_dens)
 
     return Tf_dens
+
+
+def renorm_magnetisation(target_mag, Wfn):
+
+    np2 = abs(Wfn[0]) ** 2
+    np1 = abs(Wfn[1]) ** 2
+    n0 = abs(Wfn[2]) ** 2
+    nm1 = abs(Wfn[3]) ** 2
+    nm2 = abs(Wfn[4]) ** 2
+
+    N = np2 + np1 + n0 + nm1 + nm2
+
+    r = (np2 + nm2) / (np1 + nm1)  # Ratio of outer component populations to inner populations
+
+    # Correction factors:
+    r1 = 1 + r * (target_mag * N - 2 * (np2 - nm2) - (np1 - nm1)) / (2 * (2 * r + 1) * np2)
+    r5 = 1 - r * (target_mag * N - 2 * (np2 - nm2) - (np1 - nm1)) / (2 * (2 * r + 1) * nm2)
+    r2 = 1 + r * (target_mag * N - 2 * (np2 - nm2) - (np1 - nm1)) / (2 * (2 * r + 1) * np1)
+    r4 = 1 - r * (target_mag * N - 2 * (np2 - nm2) - (np1 - nm1)) / (2 * (2 * r + 1) * nm1)
+
+    # Update renorm factors:
+    r1 = cp.sqrt(r1 / N)
+    r2 = cp.sqrt(r2 / N)
+    r3 = cp.sqrt(1 / N)
+    r4 = cp.sqrt(r4 / N)
+    r5 = cp.sqrt(r5 / N)
+
+    r1 = cp.nan_to_num(r1)
+    r2 = cp.nan_to_num(r2)
+    r4 = cp.nan_to_num(r4)
+    r5 = cp.nan_to_num(r5)
+
+    # Renormalise spinor components:
+    Wfn[0] *= r1
+    Wfn[1] *= r2
+    Wfn[2] *= r3
+    Wfn[3] *= r4
+    Wfn[4] *= r5
