@@ -1,4 +1,5 @@
 import numpy as np
+import cupy as cp
 from numba import njit
 
 """File containing functions for calculating certain diagnostics accelerated using numba"""
@@ -46,6 +47,23 @@ def calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2):
     fp = np.sqrt(6) * (psiP1 * np.conj(psi0) + psi0 * np.conj(psiM1)) + \
          2 * (psiM1 * np.conj(psiM2) + psiP2 * np.conj(psiP1))
     fz = 2 * (np.abs(psiP2) ** 2 - np.abs(psiM2) ** 2) + np.abs(psiP1) ** 2 - np.abs(psiM1) ** 2
+
+    return fp, fz
+
+
+def calc_spin_vectors_cuda(psiP2, psiP1, psi0, psiM1, psiM2):
+    """
+    :param psiP2: psi_+2 component
+    :param psiP1: psi_+1 component
+    :param psi0: psi_0 component
+    :param psiM1: psi_-1 component
+    :param psiM2: psi_-2 component
+    :return: fp, fz: perpendicular and longitudinal spin vectors
+    """
+
+    fp = cp.sqrt(6) * (psiP1 * cp.conj(psi0) + psi0 * cp.conj(psiM1)) + \
+         2 * (psiM1 * cp.conj(psiM2) + psiP2 * cp.conj(psiP1))
+    fz = 2 * (cp.abs(psiP2) ** 2 - cp.abs(psiM2) ** 2) + cp.abs(psiP1) ** 2 - cp.abs(psiM1) ** 2
 
     return fp, fz
 
