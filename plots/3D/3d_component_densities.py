@@ -60,7 +60,7 @@ for i, axis in enumerate(grid):
     axis.set_title(axis_titles[i])
 
     # Plot slice through y-axis:
-    plot = axis.contourf(X[:, Ny // 2, :], Z[:, Ny // 2, :], abs(Wfn[i][:, Ny // 2, :]) ** 2,
+    plot = axis.contourf(X[:, :, Ny // 2 + 10], Y[:, :, Ny // 2 + 10], abs(Wfn[i][:, :, Ny // 2 + 10]) ** 2,
                          np.linspace(0, dens_max, 100), cmap='jet')
 
     if i == len(grid) - 1:
