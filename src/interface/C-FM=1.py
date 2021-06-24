@@ -62,7 +62,7 @@ Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 
 # Spin rotation on wavefunction:
 alpha_angle = 0
-beta_angle = 0.1
+beta_angle = 0.01
 gamma_angle = 0
 
 Psi = sm.rotation(Psi, alpha_angle, beta_angle, gamma_angle)
