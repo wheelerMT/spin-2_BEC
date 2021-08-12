@@ -31,14 +31,8 @@ theta = np.linspace(0, np.pi, 50)
 phi = np.linspace(0, 2 * np.pi, 50)
 theta, phi = np.meshgrid(theta, phi, indexing='ij')
 
-# Total density
-n = diag.calc_density(Wfn)
-
 # Calculate normalised wavefunction
 Zeta = diag.normalise_wfn(Wfn)
-
-# a30
-a30 = diag.calc_spin_singlet_trio(Zeta[0], Zeta[1], Zeta[2], Zeta[3], Zeta[4])
 
 # Spherical Harmonics
 Y_2p2 = 0.25 * np.sqrt(15 / 2 * np.pi) * np.exp(-2j * phi) * np.sin(theta) ** 2
@@ -48,21 +42,30 @@ Y_2m1 = -0.5 * np.sqrt(15 / 2 * np.pi) * np.exp(1j * phi) * np.sin(theta) * np.c
 Y_2m2 = 0.25 * np.sqrt(15 / 2 * np.pi) * np.exp(2j * phi) * np.sin(theta) ** 2
 
 # Indices used for slicing:
-z_index = Nz // 2 + 10
+z_index = Nz // 2 - 10
+
+# Indices for ranges
+x_range_low = Nx // 2 - 7
+x_range_high = Nx // 2 + 7
+y_range_low = Ny // 2 - 4
+y_range_high = Ny // 2 + 4
 
 fig = go.Figure()
 fig.update_layout(scene=dict(zaxis=dict(nticks=4, range=[z[z_index] - 1, z[z_index] + 1])))
 
-for i in range(Nx // 2 - 5, Nx // 2 + 6, 1):
-    for j in range(Ny // 2 - 5, Ny // 2 + 6, 2):
+for i in range(x_range_low, x_range_high + 1, 1):
+    for j in range(y_range_low, y_range_high + 1, 1):
         zsph = Zeta[0][i, j, z_index] * Y_2p2 + Zeta[1][i, j, z_index] * Y_2p1 + Zeta[2][
             i, j, z_index] * Y_2p0 + \
                Zeta[3][i, j, z_index] * Y_2m1 + Zeta[4][i, j, z_index] * Y_2m2
-        zsph *= 0.5
-        xx = 0.5 * abs(zsph) ** 2 * np.sin(theta) * np.cos(phi) + X[i, j, z_index]
-        yy = 0.5 * abs(zsph) ** 2 * np.sin(theta) * np.sin(phi) + Y[i, j, z_index]
-        zz = 0.5 * abs(zsph) ** 2 * np.cos(theta) + Z[i, j, z_index]
+        zsph *= 0.4
+        xx = 0.4 * abs(zsph) ** 2 * np.sin(theta) * np.cos(phi) + X[i, j, z_index]
+        yy = 0.4 * abs(zsph) ** 2 * np.sin(theta) * np.sin(phi) + Y[i, j, z_index]
+        zz = 0.4 * abs(zsph) ** 2 * np.cos(theta) + Z[i, j, z_index]
 
-        fig.add_trace(go.Surface(x=xx, y=yy, z=zz, surfacecolor=np.angle(zsph)))
+        if i == x_range_high & j == y_range_high:
+            fig.add_trace(go.Surface(x=xx, y=yy, z=zz, surfacecolor=np.angle(zsph), colorscale="Jet", colorbar=dict(x=0.7)))
+        else:
+            fig.add_trace(go.Surface(x=xx, y=yy, z=zz, surfacecolor=np.angle(zsph), colorscale="Jet", showscale=False))
 
 fig.show()
