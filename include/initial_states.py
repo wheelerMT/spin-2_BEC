@@ -2,10 +2,30 @@ from spin2 import *
 from abc import ABC, abstractmethod
 
 
-# Initial States
 class InitialStateFactory:
+    """Factory for choosing the correct initial state. Sets the initial state
+    based on the type of interpolating spinor we require.
+    """
+
     @staticmethod
-    def set_initial_state(initial_state: str, grid: Grid, wfn: Wavefunction, eta: cp.ndarray):
+    def set_initial_state(initial_state: str, grid: Grid, wfn: Wavefunction, eta: cp.ndarray) -> None:
+        """Sets the initial state for the wavefunction. Takes in a :obj:`str` to
+        determine which interpolating spinor we wish to use.
+
+        Parameters
+        ----------
+        initial_state : str
+            'C-BN', 'C-FM', 'UN-BN' or 'FM-BN' - String determining which
+            initial interpolating spinor to use.
+        grid : Grid
+            Grid object associated with the wavefunction.
+        wfn : Wavefunction
+            Wavefunction object.
+        eta : ndarray
+            Interpolating parameter used for setting the type of interpolating
+            initial state.
+        """
+
         if initial_state == 'C-BN':
             CyclicBNInitialState.generate_initial_state(grid, wfn, eta)
         elif initial_state == 'C-FM':
@@ -16,6 +36,7 @@ class InitialStateFactory:
             CyclicBNInitialState.generate_initial_state(grid, wfn, eta)
 
 
+# Initial States
 class TrappedInitialState(ABC):
     """Abstract class for the initial state of the condensate.
     """
@@ -66,6 +87,7 @@ class TrappedInitialState(ABC):
 
 
 class CyclicBNInitialState(TrappedInitialState):
+    """Cyclic to BN interpolating spinor."""
     @staticmethod
     def generate_initial_state(grid: Grid, wfn: Wavefunction, eta: cp.ndarray):
         Tf = super().get_TF_density(grid, wfn)  # Get Thomas-Fermi profile
@@ -80,6 +102,7 @@ class CyclicBNInitialState(TrappedInitialState):
 
 
 class CyclicFMInitialState(TrappedInitialState):
+    """Cyclic to FM interpolating spinor."""
     @staticmethod
     def generate_initial_state(grid: Grid, wfn: Wavefunction, eta: cp.ndarray):
         Tf = super().get_TF_density(grid, wfn)  # Get Thomas-Fermi profile
@@ -94,6 +117,7 @@ class CyclicFMInitialState(TrappedInitialState):
 
 
 class UNBNInitialState(TrappedInitialState):
+    """UN to BN interpolating spinor."""
     @staticmethod
     def generate_initial_state(grid: Grid, wfn: Wavefunction, eta: cp.ndarray):
         Tf = super().get_TF_density(grid, wfn)  # Get Thomas-Fermi profile
@@ -108,6 +132,7 @@ class UNBNInitialState(TrappedInitialState):
 
 
 class FMBNInitialState(TrappedInitialState):
+    """FM to BN interpolating spinor."""
     @staticmethod
     def generate_initial_state(grid: Grid, wfn: Wavefunction, eta: cp.ndarray):
         Tf = super().get_TF_density(grid, wfn)  # Get Thomas-Fermi profile
