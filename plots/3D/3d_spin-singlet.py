@@ -66,7 +66,7 @@ for axis in grid:
 
 # y and z indices for graphs:
 y_ind = Ny // 2
-z_upper_ind = Ny // 2 + 10
+z_upper_ind = Nz // 2 + 10
 z_lower_ind = Nz // 2 - 10
 
 # Plot titles:
@@ -92,15 +92,15 @@ for axis in [grid[0], grid[1], grid[2]]:
 
 # First row:
 one_spin_plot = grid[0].contourf(X[:, y_ind, :], Z[:, y_ind, :], abs(spin_expec[:, y_ind, :]),
-                                 np.linspace(0, 2, 100), cmap='jet')
+                                 np.linspace(0, 2.01, 100), cmap='jet')
 one_a20_plot = grid[1].contourf(X[:, y_ind, :], Z[:, y_ind, :], abs(a20[:, y_ind, :]) ** 2,
                                 np.linspace(0, 1 / 5, 100), cmap='jet')
 one_a30_plot = grid[2].contourf(X[:, y_ind, :], Z[:, y_ind, :], abs(a30[:, y_ind, :]) ** 2,
-                                np.linspace(0, 2, 100), cmap='jet')
+                                np.linspace(0, 2.01, 100), cmap='jet')
 
 # Second row:
 two_spin_plot = grid[3].contourf(X[:, :, z_upper_ind], Y[:, :, z_upper_ind], abs(spin_expec[:, :, z_upper_ind]),
-                                 np.linspace(0, 2, 100), cmap='jet')
+                                 np.linspace(0, 2.01, 100), cmap='jet')
 two_a20_plot = grid[4].contourf(X[:, :, z_upper_ind], Y[:, :, z_upper_ind], abs(a20[:, :, z_upper_ind]) ** 2,
                                 np.linspace(0, 1 / 5, 100), cmap='jet')
 two_a30_plot = grid[5].contourf(X[:, :, z_upper_ind], Y[:, :, z_upper_ind], abs(a30[:, :, z_upper_ind]) ** 2,
@@ -108,11 +108,11 @@ two_a30_plot = grid[5].contourf(X[:, :, z_upper_ind], Y[:, :, z_upper_ind], abs(
 
 # Third row:
 three_spin_plot = grid[6].contourf(X[:, :, z_lower_ind], Y[:, :, z_lower_ind], abs(spin_expec[:, :, z_lower_ind]),
-                                   np.linspace(0, 2, 100), cmap='jet')
+                                   np.linspace(0, 2.01, 100), cmap='jet')
 three_a20_plot = grid[7].contourf(X[:, :, z_lower_ind], Y[:, :, z_lower_ind], abs(a20[:, :, z_lower_ind]) ** 2,
                                   np.linspace(0, 1 / 5, 100), cmap='jet')
 three_a30_plot = grid[8].contourf(X[:, :, z_lower_ind], Y[:, :, z_lower_ind], abs(a30[:, :, z_lower_ind]) ** 2,
-                                  np.linspace(0, 2, 100), cmap='jet')
+                                  np.linspace(0, 2.01, 100), cmap='jet')
 
 # Set colorbars
 for i, contour in enumerate([one_spin_plot, two_spin_plot, three_spin_plot]):
