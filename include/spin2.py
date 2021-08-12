@@ -1,4 +1,4 @@
-"""Main file containing all necessary classes to simulate a spin- BEC."""
+"""Main class file containing all necessary classes to simulate a spin- BEC."""
 
 import cupy as cp
 from typing import Iterator
@@ -15,23 +15,31 @@ class Grid:
         Number of x grid points.
     ny : int
         Number of y grid points.
+    nz : int
+        Number of z grid points.
     dx : float
-        x grid spacing.
+        Grid spacing for x grid, defaults to 1.
     dy : float
-        y grid spacing.
+        Grid spacing for y grid, defaults to 1.
+    dz : float
+        Grid spacing for z grid, defaults to 1.
     len_x : float
         Length of grid in x-direction.
     len_y : float
         Length of grid in y-direction.
+    len_z : float
+        Length of grid in z-direction.
     X : ndarray
         2D :obj:`ndarray` of X meshgrid.
     Y : ndarray
         2D :obj:`ndarray` of Y meshgrid.
+    Z : ndarray
+        2D :obj:`ndarray` of Z meshgrid.
     squared : ndarray
-        2D :obj:`ndarray` storing result of X ** 2 + Y ** 2.
+        2D :obj:`ndarray` storing result of X ** 2 + Y ** 2 + Z ** 2.
     """
 
-    def __init__(self, nx: int, ny: int, dx: float = 1., dy: float = 1.):
+    def __init__(self, nx: int, ny: int, nz: int, dx: float = 1., dy: float = 1., dz: float = 1.):
         """Instantiate a Grid object.
         Automatically generates meshgrids using parameters provided.
 
@@ -41,31 +49,37 @@ class Grid:
             Number of x grid points.
         ny : int
             Number of y grid points.
+        nz : int
+            Number of z grid points.
         dx : float
             Grid spacing for x grid, defaults to 1.
         dy : float
             Grid spacing for y grid, defaults to 1.
+        dz : float
+            Grid spacing for z grid, defaults to 1.
         """
 
-        self.nx, self.ny = nx, ny
-        self.dx, self.dy = dx, dy
-        self.len_x, self.len_y = nx * dx, ny * dy
+        self.nx, self.ny, self.nz = nx, ny, nz
+        self.dx, self.dy, self.dz = dx, dy, dz
+        self.len_x, self.len_y, self.len_z = nx * dx, ny * dy, nz * dz
 
         # Generate 2D meshgrids:
-        self.X, self.Y = cp.meshgrid(cp.arange(-nx // 2, nx // 2) * dx, cp.arange(-ny // 2, ny // 2) * dy)
+        self.X, self.Y, self.Z = cp.meshgrid(cp.arange(-nx // 2, nx // 2) * dx, cp.arange(-ny // 2, ny // 2) * dy,
+                                             cp.arange(-nz // 2, nz // 2) * dz)
 
-        self.squared = self.X ** 2 + self.Y ** 2
+        self.squared = self.X ** 2 + self.Y ** 2 + self.Z ** 2
 
     def fftshift(self):
-        """Performs FFT shift on X & Y meshgrids.
+        """Performs FFT shift on X, Y & Z meshgrids.
         """
 
         self.X = cp.fft.fftshift(self.X)
         self.Y = cp.fft.fftshift(self.Y)
+        self.Z = cp.fft.fftshift(self.Z)
 
 
 class Phase:
-    """Generates the phase profile object for a distribution of vortices.
+    """Generates the 2D phase profile object for a distribution of vortices.
     Note: currently only random distribution is supported.
 
     Attributes
@@ -75,7 +89,7 @@ class Phase:
     """
 
     def __init__(self, nvort: int, thresh: float, grid: Grid, vortex_distribution: str):
-        """Instantiate a phase object.
+        """Instantiate a 2D phase object.
         Generates the phase grid with 2pi windings about each vortex.
 
         Parameters
@@ -205,3 +219,33 @@ class Phase:
             theta_tot += theta_k
 
         self.phase = theta_tot
+
+
+class Wavefunction:
+
+    def __init__(self, grid: Grid, c0: float, c2: float, c4: float, **kwargs):
+        self.psi = []
+        self.psi_k = []
+        self.c0 = c0
+        self.c2 = c2
+        self.c4 = c4
+
+    def set_initial_state(self, psiP2, psiP1, psi0, psiM1, psiM2):
+        """Sets the initial state for both positional and k-space wavefunction.
+
+        Parameters
+        ----------
+        psiP2 : ndarray
+            +2 component of the wavefunction.
+        psiP1 : ndarray
+            +1 component of the wavefunction.
+        psi0 : ndarray
+            +0 component of the wavefunction.
+        psiM1 : ndarray
+            -1 component of the wavefunction.
+        psiM2 : ndarray
+            -2 component of the wavefunction.
+        """
+
+        self.psi = [psiP2, psiP1, psi0, psiM1, psiM2]
+        self.psi_k = [cp.fft.fft2(wfn) for wfn in self.psi]
