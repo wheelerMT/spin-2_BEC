@@ -18,6 +18,12 @@ psiP1 = data['wavefunction/psiP1'][:, :, :, frame]
 psi0 = data['wavefunction/psi0'][:, :, :, frame]
 psiM1 = data['wavefunction/psiM1'][:, :, :, frame]
 psiM2 = data['wavefunction/psiM2'][:, :, :, frame]
+
+# psiP2 = data['initial_state/psiP2'][:, :, :]
+# psiP1 = data['initial_state/psiP1'][:, :, :]
+# psi0 = data['initial_state/psi0'][:, :, :]
+# psiM1 = data['initial_state/psiM1'][:, :, :]
+# psiM2 = data['initial_state/psiM2'][:, :, :]
 Wfn = [psiP2, psiP1, psi0, psiM1, psiM2]
 
 # Grid data:
@@ -64,7 +70,8 @@ for i in range(x_range_low, x_range_high + 1, 1):
         zz = 0.4 * abs(zsph) ** 2 * np.cos(theta) + Z[i, j, z_index]
 
         if i == x_range_high & j == y_range_high:
-            fig.add_trace(go.Surface(x=xx, y=yy, z=zz, surfacecolor=np.angle(zsph), colorscale="Jet", colorbar=dict(x=0.7)))
+            fig.add_trace(go.Surface(x=xx, y=yy, z=zz, surfacecolor=np.angle(zsph), colorscale="Jet",
+                                     colorbar=dict(x=0.7, tickvals=np.linspace(-np.pi, np.pi, 3, endpoint=True))))
         else:
             fig.add_trace(go.Surface(x=xx, y=yy, z=zz, surfacecolor=np.angle(zsph), colorscale="Jet", showscale=False))
 
