@@ -8,7 +8,7 @@ import h5py
 # --------------------------------------------------------------------------------------------------------------------
 Nx, Ny, Nz = 64, 64, 64  # Number of grid points
 Mx, My, Mz = Nx // 2, Ny // 2, Nz // 2
-dx, dy, dz = 0.5, 0.5, 0.5  # Grid spacing
+dx, dy, dz = 20 / Nx, 20 / Ny, 20 / Nz  # Grid spacing
 dkx, dky, dkz = np.pi / (Mx * dx), np.pi / (My * dy), np.pi / (Mz * dz)  # K-space spacing
 len_x, len_y, len_z = Nx * dx, Ny * dy, Nz * dz  # Box length
 
