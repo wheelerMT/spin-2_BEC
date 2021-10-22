@@ -30,9 +30,10 @@ spin_f = 2  # Spin-2
 omega_trap = 1
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
-q = np.where(Z <= 0, 0.05, -0.05)  # Quadratic Zeeman
+q = np.where(abs(Z) <= 1, -Z, 1)  # Quadratic Zeeman
+q = np.where(Z > 1, -1, q)
 
-c0 = 5000
+c0 = 1e4
 c2 = 1000
 c4 = -1000
 
@@ -72,8 +73,8 @@ Psi = [cp.fft.fftn(wfn) for wfn in Psi]  # Transforming wfn to Fourier space
 
 # Helper parameters for kinetic evolution
 Ek = 0.5 * (Kx ** 2 + Ky ** 2 + Kz ** 2)
-A = cp.exp(-1j * (Ek + 4 * q) * dt / 2)
-B = cp.exp(-1j * (Ek + 2 * q) * dt / 2)
+A = cp.exp(-1j * Ek * dt / 2)
+B = cp.exp(-1j * Ek * dt / 2)
 C = cp.exp(-1j * Ek * dt / 2)
 
 # Store parameters in dictionary for saving
@@ -129,7 +130,7 @@ for i in range(Nt):
     Psi = sm.first_kinetic_evo(Psi, A, B, C)
 
     # Non-linear evolution:
-    Psi = sm.nonlin_evo(Psi[0], Psi[1], Psi[2], Psi[3], Psi[4], c0, c2, c4, V, p, dt, spin_f)
+    Psi = sm.nonlin_evo(Psi[0], Psi[1], Psi[2], Psi[3], Psi[4], c0, c2, c4, V, p, q, dt, spin_f)
 
     # Kinetic evolution:
     Psi = sm.last_kinetic_evo(Psi, A, B, C)
