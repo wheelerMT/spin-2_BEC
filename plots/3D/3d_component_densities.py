@@ -8,7 +8,7 @@ matplotlib.use('TkAgg')
 
 
 # Load in data:
-data_path = input('Enter file path of data to view: ')
+data_path = 'UN-BN_interface'  # input('Enter file path of data to view: ')
 data = h5py.File('../../data/3D/{}.hdf5'.format(data_path), 'r')
 num_of_frames = data['wavefunction/psiP2'].shape[-1]
 print("Working with {} frames of data".format(num_of_frames))
@@ -34,9 +34,9 @@ X, Y, Z = np.meshgrid(x[:], y[:], z[:], indexing='ij')
 Nx, Ny, Nz = len(x), len(y), len(z)
 
 # Generate figure:
-fig = plt.figure(figsize=(15, 4.8))
+fig = plt.figure(figsize=(10, 6.4))
 grid = ImageGrid(fig, 111,          # as in plt.subplot(111)
-                 nrows_ncols=(1, 5),
+                 nrows_ncols=(2, 5),
                  axes_pad=0.15,
                  share_all=True,
                  cbar_location="right",
@@ -53,20 +53,34 @@ axis_titles = [r'$|\psi_2|^2$', r'$|\psi_1|^2$', r'$|\psi_0|^2$', r'$|\psi_{-1}|
 
 # Plot density of last frame of data
 for i, axis in enumerate(grid):
-    if i == 0:
-        axis.set_ylabel(r'$z/\ell$')
-    axis.set_xlabel(r'$x/\ell$')
+    # Plot slice through z-axis:
+    if i <= 4:
+        if i == 0:
+            axis.set_ylabel(r'$y/\ell$')
 
-    axis.set_title(axis_titles[i])
+        axis.set_title(axis_titles[i])
 
-    # Plot slice through y-axis:
-    plot = axis.contourf(X[:, :, Ny // 2 + 10], Y[:, :, Ny // 2 + 10], abs(Wfn[i][:, :, Ny // 2 + 10]) ** 2,
-                         np.linspace(0, dens_max, 100), cmap='jet')
+        plot = axis.contourf(X[:, Ny // 2 + 10, :], Z[:, Ny // 2 + 10, :], abs(Wfn[i][:, Ny // 2 + 10, :]) ** 2,
+                             np.linspace(0, dens_max, 100), cmap='jet')
 
-    if i == len(grid) - 1:
-        # Colorbar
-        axis.cax.colorbar(plot)
-        axis.cax.toggle_label(True)
+        if i == len(grid) - 1:
+            # Colorbar
+            axis.cax.colorbar(plot)
+            axis.cax.toggle_label(True)
+
+    if i > 4:
+        if i == 5:
+            axis.set_ylabel(r'$y/\ell$')
+        axis.set_xlabel(r'$x/\ell$')
+        plot = axis.contourf(X[:, Ny // 2 - 10, :], Z[:, Ny // 2 - 10, :], abs(Wfn[i-5][:, Ny // 2 - 10, :]) ** 2,
+                             np.linspace(0, dens_max, 100), cmap='jet')
+
+        if i == len(grid) - 1:
+            # Colorbar
+            axis.cax.colorbar(plot)
+            axis.cax.toggle_label(True)
+
 
 plt.tight_layout()
+# plt.savefig('../../data/plots/C-FM/{}/{}_dens.png'.format(data_path, data_path))
 plt.show()
