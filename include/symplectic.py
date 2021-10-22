@@ -54,7 +54,7 @@ def rotation(Wfn, alpha, beta, gamma):
     return new_Wfn
 
 
-def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt, spin_f):
+def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, q, dt, spin_f):
     # Calculate densities:
     n = abs(psiP2) ** 2 + abs(psiP1) ** 2 + abs(psi0) ** 2 + abs(psiM1) ** 2 + abs(psiM2) ** 2
     A00 = 1 / cp.sqrt(5) * (psi0 ** 2 - 2 * psiP1 * psiM1 + 2 * psiP2 * psiM2)
@@ -99,10 +99,10 @@ def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, dt, spin_f):
     for ii in range(len(Wfn)):
         Wfn[ii] += Qfactor * Qpsi[ii] + Q2factor * Q2psi[ii] + Q3factor * Q3psi[ii] + Q4factor * Q4psi[ii]
 
-    # Evolve (c0+c4)*n^2 + (V + pm)*n:
+    # Evolve (c0+c4)*n + (V + pm + qm^2):
     for ii in range(len(Wfn)):
         mF = spin_f - ii
-        Wfn[ii] *= cp.exp(-1j * dt * ((c0 + c4) * n + V + p * mF))
+        Wfn[ii] *= cp.exp(-1j * dt * ((c0 + c4) * n + V + p * mF + q * mF ** 2))
 
     return Wfn
 
