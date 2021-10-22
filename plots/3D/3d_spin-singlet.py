@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 
 # Load in data:
-data_path = input('Enter file path of data to view: ')
+data_path = 'UN-BN_interface'   # input('Enter file path of data to view: ')
 data = h5py.File('../../data/3D/{}.hdf5'.format(data_path), 'r')
 num_of_frames = data['wavefunction/psiP2'].shape[-1]
 print("Working with {} frames of data".format(num_of_frames))
@@ -22,6 +22,13 @@ psiP1 = data['wavefunction/psiP1'][:, :, :, frame]
 psi0 = data['wavefunction/psi0'][:, :, :, frame]
 psiM1 = data['wavefunction/psiM1'][:, :, :, frame]
 psiM2 = data['wavefunction/psiM2'][:, :, :, frame]
+
+# psiP2 = data['initial_state/psiP2'][:, :, :]
+# psiP1 = data['initial_state/psiP1'][:, :, :]
+# psi0 = data['initial_state/psi0'][:, :, :]
+# psiM1 = data['initial_state/psiM1'][:, :, :]
+# psiM2 = data['initial_state/psiM2'][:, :, :]
+
 Wfn = [psiP2, psiP1, psi0, psiM1, psiM2]
 
 # Grid data:
@@ -126,5 +133,5 @@ for i, contour in enumerate([one_a30_plot, two_a30_plot, three_a30_plot]):
     grid[(i * 3) + 2].cax.toggle_label(True)
 
 plt.tight_layout()
-plt.savefig('../../data/plots/{}.png'.format(data_path), bbox_inches="tight")
+# plt.savefig('../../data/plots/{}.png'.format(data_path), bbox_inches="tight")
 plt.show()
