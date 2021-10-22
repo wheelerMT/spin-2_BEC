@@ -4,7 +4,7 @@ import include.diagnostics as diag
 import plotly.graph_objects as go
 
 # Load in data:
-data_path = input('Enter file path of data to view: ')
+data_path = 'UN-BN_interface'  # input('Enter file path of data to view: ')
 data = h5py.File('../../data/3D/{}.hdf5'.format(data_path), 'r')
 num_of_frames = data['wavefunction/psiP2'].shape[-1]
 print("Working with {} frames of data".format(num_of_frames))
@@ -13,17 +13,17 @@ print("Working with {} frames of data".format(num_of_frames))
 frame = -1
 
 # Wavefunction
-psiP2 = data['wavefunction/psiP2'][:, :, :, frame]
-psiP1 = data['wavefunction/psiP1'][:, :, :, frame]
-psi0 = data['wavefunction/psi0'][:, :, :, frame]
-psiM1 = data['wavefunction/psiM1'][:, :, :, frame]
-psiM2 = data['wavefunction/psiM2'][:, :, :, frame]
+# psiP2 = data['wavefunction/psiP2'][:, :, :, frame]
+# psiP1 = data['wavefunction/psiP1'][:, :, :, frame]
+# psi0 = data['wavefunction/psi0'][:, :, :, frame]
+# psiM1 = data['wavefunction/psiM1'][:, :, :, frame]
+# psiM2 = data['wavefunction/psiM2'][:, :, :, frame]
 
-# psiP2 = data['initial_state/psiP2'][:, :, :]
-# psiP1 = data['initial_state/psiP1'][:, :, :]
-# psi0 = data['initial_state/psi0'][:, :, :]
-# psiM1 = data['initial_state/psiM1'][:, :, :]
-# psiM2 = data['initial_state/psiM2'][:, :, :]
+psiP2 = data['initial_state/psiP2'][:, :, :]
+psiP1 = data['initial_state/psiP1'][:, :, :]
+psi0 = data['initial_state/psi0'][:, :, :]
+psiM1 = data['initial_state/psiM1'][:, :, :]
+psiM2 = data['initial_state/psiM2'][:, :, :]
 Wfn = [psiP2, psiP1, psi0, psiM1, psiM2]
 
 # Grid data:
@@ -48,16 +48,17 @@ Y_2m1 = -0.5 * np.sqrt(15 / 2 * np.pi) * np.exp(1j * phi) * np.sin(theta) * np.c
 Y_2m2 = 0.25 * np.sqrt(15 / 2 * np.pi) * np.exp(2j * phi) * np.sin(theta) ** 2
 
 # Indices used for slicing:
-z_index = Nz // 2 - 10
+z_index = Nz // 2 + 10
 
 # Indices for ranges
-x_range_low = Nx // 2 - 7
-x_range_high = Nx // 2 + 7
-y_range_low = Ny // 2 - 4
-y_range_high = Ny // 2 + 4
+x_range_low = Nx // 2 - 6
+x_range_high = Nx // 2 + 6
+y_range_low = Ny // 2 - 6
+y_range_high = Ny // 2 + 6
 
 fig = go.Figure()
-fig.update_layout(scene=dict(zaxis=dict(nticks=4, range=[z[z_index] - 1, z[z_index] + 1])))
+fig.update_layout(scene=dict(zaxis=dict(nticks=4, range=[z[z_index] - 1, z[z_index] + 1], showbackground=False),
+                  xaxis=dict(showbackground=False), yaxis=dict(showbackground=False)))
 
 for i in range(x_range_low, x_range_high + 1, 1):
     for j in range(y_range_low, y_range_high + 1, 1):
@@ -71,8 +72,14 @@ for i in range(x_range_low, x_range_high + 1, 1):
 
         if i == x_range_high & j == y_range_high:
             fig.add_trace(go.Surface(x=xx, y=yy, z=zz, surfacecolor=np.angle(zsph), colorscale="Jet",
-                                     colorbar=dict(x=0.7, tickvals=np.linspace(-np.pi, np.pi, 3, endpoint=True))))
+                                     colorbar=dict(x=0.75, nticks=10, tickmode="array", tickvals=[-np.pi, 0, np.pi],
+                                     tickfont=dict(size=28))))
         else:
             fig.add_trace(go.Surface(x=xx, y=yy, z=zz, surfacecolor=np.angle(zsph), colorscale="Jet", showscale=False))
 
+camera = dict(
+    eye=dict(x=0., y=-0.8, z=1)
+)
+fig.update_layout(scene_camera=camera)
+# fig.write_image("../../data/plots/presentation/{}_cyclicSide.pdf".format(data_path))
 fig.show()
