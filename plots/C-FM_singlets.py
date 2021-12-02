@@ -16,4 +16,6 @@ for i in range(100):
 
 mod_a30_C_FM = 0.5 * (2 - eta_C_FM) ** 2 * (1 + eta_C_FM)
 plt.plot(eta_C_FM, mod_a30_C_FM, 'ko')
+plt.ylabel(r'$|A_{30}|^2$')
+plt.xlabel(r'$\eta$')
 plt.show()
