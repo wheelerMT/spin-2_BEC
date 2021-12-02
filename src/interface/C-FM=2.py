@@ -49,7 +49,8 @@ phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-eta = np.where(Z <= 0, 0, 2)  # Parameter used to interpolate between states
+eta = np.where(Z <= 0, 0, Z)  # Parameter used to interpolate between states
+eta = np.where(Z > 2, 2, eta)
 
 # Generate initial wavefunctions:
 psiP2 = cp.sqrt(Tf) * 1 / cp.sqrt(3) * cp.sqrt((1 + eta))
@@ -69,6 +70,11 @@ Psi = sm.rotation(Psi, alpha_angle, beta_angle, gamma_angle)
 N = [dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi]  # Atom number of each component
 theta_fix = [cp.angle(wfn) for wfn in Psi]
 Psi = [cp.fft.fftn(wfn) for wfn in Psi]  # Transforming wfn to Fourier space
+
+Ek = 0.5 * (Kx ** 2 + Ky ** 2 + Kz ** 2)
+A = cp.exp(-1j * Ek * dt / 2)
+B = cp.exp(-1j * Ek * dt / 2)
+C = cp.exp(-1j * Ek * dt / 2)
 
 # Store parameters in dictionary for saving
 parameters = {
@@ -120,13 +126,13 @@ with h5py.File(data_path, 'w') as data:
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
     # Kinetic evolution:
-    sm.first_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, q, dt)
+    Psi = sm.first_kinetic_evo(Psi, A, B, C)
 
     # Non-linear evolution:
-    Psi = sm.nonlin_evo(Psi[0], Psi[1], Psi[2], Psi[3], Psi[4], c0, c2, c4, V, p, dt, spin_f)
+    Psi = sm.nonlin_evo(Psi[0], Psi[1], Psi[2], Psi[3], Psi[4], c0, c2, c4, V, p, q, dt, spin_f)
 
     # Kinetic evolution:
-    sm.last_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, q, dt)
+    Psi = sm.last_kinetic_evo(Psi, A, B, C)
 
     # Renormalise  atom number and fix phase:
     for ii in range(len(Psi)):

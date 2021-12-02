@@ -22,6 +22,13 @@ psiP1 = data['wavefunction/psiP1'][:, :, :, frame]
 psi0 = data['wavefunction/psi0'][:, :, :, frame]
 psiM1 = data['wavefunction/psiM1'][:, :, :, frame]
 psiM2 = data['wavefunction/psiM2'][:, :, :, frame]
+
+# psiP2 = data['initial_state/psiP2'][:, :, :]
+# psiP1 = data['initial_state/psiP1'][:, :, :]
+# psi0 = data['initial_state/psi0'][:, :, :]
+# psiM1 = data['initial_state/psiM1'][:, :, :]
+# psiM2 = data['initial_state/psiM2'][:, :, :]
+
 Wfn = [psiP2, psiP1, psi0, psiM1, psiM2]
 
 total_dens = diag.calc_density(Wfn)
@@ -36,7 +43,7 @@ Nx, Ny, Nz = len(x), len(y), len(z)
 # Generate figure:
 fig = plt.figure(figsize=(10, 6.4))
 grid = ImageGrid(fig, 111,          # as in plt.subplot(111)
-                 nrows_ncols=(2, 5),
+                 nrows_ncols=(3, 5),
                  axes_pad=0.15,
                  share_all=True,
                  cbar_location="right",
@@ -56,11 +63,11 @@ for i, axis in enumerate(grid):
     # Plot slice through z-axis:
     if i <= 4:
         if i == 0:
-            axis.set_ylabel(r'$y/\ell$')
+            axis.set_ylabel(r'$z/\ell$')
 
         axis.set_title(axis_titles[i])
 
-        plot = axis.contourf(X[:, Ny // 2 + 10, :], Z[:, Ny // 2 + 10, :], abs(Wfn[i][:, Ny // 2 + 10, :]) ** 2,
+        plot = axis.contourf(X[:, Ny // 2, :], Z[:, Ny // 2, :], abs(Wfn[i][:, Ny // 2, :]) ** 2,
                              np.linspace(0, dens_max, 100), cmap='jet')
 
         if i == len(grid) - 1:
@@ -68,11 +75,24 @@ for i, axis in enumerate(grid):
             axis.cax.colorbar(plot)
             axis.cax.toggle_label(True)
 
-    if i > 4:
+    # Plot slice through z-axis:
+    if 4 < i <= 9:
         if i == 5:
             axis.set_ylabel(r'$y/\ell$')
+
+        plot = axis.contourf(X[:, :, Nz // 2 + 10], Y[:, :, Nz // 2 + 10], abs(Wfn[i-5][:, :, Nz // 2 + 10]) ** 2,
+                             np.linspace(0, dens_max, 100), cmap='jet')
+
+        if i == len(grid) - 1:
+            # Colorbar
+            axis.cax.colorbar(plot)
+            axis.cax.toggle_label(True)
+
+    if 9 < i:
+        if i == 10:
+            axis.set_ylabel(r'$y/\ell$')
         axis.set_xlabel(r'$x/\ell$')
-        plot = axis.contourf(X[:, Ny // 2 - 10, :], Z[:, Ny // 2 - 10, :], abs(Wfn[i-5][:, Ny // 2 - 10, :]) ** 2,
+        plot = axis.contourf(X[:, :, Nz // 2 - 10], Y[:, :, Nz // 2 - 10], abs(Wfn[i-10][:, :, Nz // 2 - 10]) ** 2,
                              np.linspace(0, dens_max, 100), cmap='jet')
 
         if i == len(grid) - 1:
