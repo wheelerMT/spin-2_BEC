@@ -8,7 +8,7 @@ matplotlib.use('TkAgg')
 
 
 # Load in data:
-data_path = 'UN-BN_interface'  # input('Enter file path of data to view: ')
+data_path = 'UN-BN_SQV-VF'  # input('Enter file path of data to view: ')
 data = h5py.File('../../data/3D/{}.hdf5'.format(data_path), 'r')
 num_of_frames = data['wavefunction/psiP2'].shape[-1]
 print("Working with {} frames of data".format(num_of_frames))
@@ -102,5 +102,5 @@ for i, axis in enumerate(grid):
 
 
 plt.tight_layout()
-# plt.savefig('../../data/plots/C-FM/{}/{}_dens.png'.format(data_path, data_path))
+plt.savefig('../../data/plots/UN-BN/{}_dens.png'.format(data_path))
 plt.show()
