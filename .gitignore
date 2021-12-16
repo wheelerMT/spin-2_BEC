@@ -133,3 +133,4 @@ test.py
 .idea/
 *.hdf5
 data/
+tests/
