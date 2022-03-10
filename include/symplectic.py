@@ -12,7 +12,7 @@ def calc_Qpsi(fz, fp, Wfn):
 
 
 def rotation(Wfn, alpha, beta, gamma):
-    U = cp.empty((5, 5))
+    U = cp.empty((5, 5), dtype='complex64')
     C = cp.cos(beta / 2)
     S = cp.sin(beta / 2)
 
