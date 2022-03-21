@@ -134,7 +134,7 @@ def last_kinetic_evo(Wfn, A, B, C):
     return Wfn
 
 
-def first_kinetic_rot_evo_3d(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, q, dt):
+def first_kinetic_rot_evo_3d(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, dt):
     for ii in range(len(Wfn)):
         mF = spin_f - ii
 
@@ -142,20 +142,20 @@ def first_kinetic_rot_evo_3d(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, q, dt):
         Wfn[ii] = cp.fft.ifft(Wfn[ii], axis=1)
 
         # Compute first coefficient rotation
-        Wfn[ii] *= cp.exp(-1j * dt * (2 * Kx ** 2 + Kz ** 2 + 4 * omega * Y * Kx + mF ** 2 * q / 2) / 8)
+        Wfn[ii] *= cp.exp(-1j * dt * (2 * Kx ** 2 + Kz ** 2 + 4 * omega * Y * Kx) / 8)
 
         # IFFT over x, FFT over y, so we are in y and z directions
         Wfn[ii] = cp.fft.ifft(Wfn[ii], axis=0)
         Wfn[ii] = cp.fft.fft(Wfn[ii], axis=1)
 
         # Compute second coefficient rotation:
-        Wfn[ii] *= cp.exp(-1j * dt * (2 * Ky ** 2 + Kz ** 2 - 4 * omega * X * Ky + mF ** 2 * q / 2) / 8)
+        Wfn[ii] *= cp.exp(-1j * dt * (2 * Ky ** 2 + Kz ** 2 - 4 * omega * X * Ky) / 8)
 
         # IFFT over y and z, so all axes are in position space
         Wfn[ii] = cp.fft.ifftn(Wfn[ii], axes=(1, 2))
 
 
-def last_kinetic_rot_evo_3d(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, q, dt):
+def last_kinetic_rot_evo_3d(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, dt):
     for ii in range(len(Wfn)):
         mF = spin_f - ii
 
@@ -163,14 +163,14 @@ def last_kinetic_rot_evo_3d(Wfn, X, Y, Kx, Ky, Kz, omega, spin_f, q, dt):
         Wfn[ii] = cp.fft.fftn(Wfn[ii], axes=(1, 2))
 
         # Compute second coefficient rotation
-        Wfn[ii] *= cp.exp(-1j * dt * (2 * Ky ** 2 + Kz ** 2 - 4 * omega * X * Ky + mF ** 2 * q / 2) / 8)
+        Wfn[ii] *= cp.exp(-1j * dt * (2 * Ky ** 2 + Kz ** 2 - 4 * omega * X * Ky) / 8)
 
         # IFFT over y and FFT over x, so we are in x and z directions
         Wfn[ii] = cp.fft.ifft(Wfn[ii], axis=1)
         Wfn[ii] = cp.fft.fft(Wfn[ii], axis=0)
 
         # Compute first coefficient rotation
-        Wfn[ii] *= cp.exp(-1j * dt * (2 * Kx ** 2 + Kz ** 2 + 4 * omega * Y * Kx + mF ** 2 * q / 2) / 8)
+        Wfn[ii] *= cp.exp(-1j * dt * (2 * Kx ** 2 + Kz ** 2 + 4 * omega * Y * Kx) / 8)
 
         # FFT over y, so all axes are in Fourier space
         Wfn[ii] = cp.fft.fft(Wfn[ii], axis=1)
