@@ -6,7 +6,7 @@ import h5py
 # --------------------------------------------------------------------------------------------------------------------
 # Spatial and Potential parameters:
 # --------------------------------------------------------------------------------------------------------------------
-Nx, Ny, Nz = 64, 64, 64  # Number of grid points
+Nx, Ny, Nz = 128, 128, 128  # Number of grid points
 Mx, My, Mz = Nx // 2, Ny // 2, Nz // 2
 dx, dy, dz = 20 / Nx, 20 / Ny, 20 / Nz  # Grid spacing
 dkx, dky, dkz = np.pi / (Mx * dx), np.pi / (My * dy), np.pi / (Mz * dz)  # K-space spacing
@@ -28,6 +28,7 @@ Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
 # Controlled variables:
 spin_f = 2  # Spin-2
 omega_trap = 1
+omega_rot = 0.2
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
 q = np.where(abs(Z) <= 1, -Z, 1)  # Quadratic Zeeman
@@ -38,7 +39,7 @@ c2 = 1000
 c4 = -1000
 
 # Time steps, number and wavefunction save variables
-Nt = 2500
+Nt = 10000
 Nframe = 50  # Saves data every Nframe time steps
 dt = -1j * 1e-2  # Time step
 t = 0.
@@ -50,20 +51,21 @@ phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-eta = np.where(Z <= 0, 1, 0)  # Parameter used to interpolate between states
+eta = np.where(Z <= 0, -Z / 3, 0)  # Parameter used to interpolate between states
+eta = np.where(Z <= -3, 1, eta)
 
 # Generate initial wavefunctions:
-psiP2 = cp.sqrt(Tf) * cp.sqrt((1 - eta ** 2) / 2)
+psiP2 = cp.sqrt(Tf) * cp.exp(1j * phi) * cp.sqrt((1 - eta ** 2) / 2)
 psiP1 = cp.zeros((Nx, Ny, Nz))
-psi0 = cp.sqrt(Tf) * eta
+psi0 = cp.sqrt(Tf) * cp.exp(1j * phi) * eta
 psiM1 = cp.zeros((Nx, Ny, Nz))
-psiM2 = cp.sqrt(Tf) * cp.sqrt((1 - eta ** 2) / 2)
+psiM2 = cp.sqrt(Tf) * cp.exp(1j * phi) * cp.sqrt((1 - eta ** 2) / 2)
 
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 
 # Spin rotation on wavefunction:
 alpha_angle = 0
-beta_angle = 0.01
+beta_angle = cp.pi / 4
 gamma_angle = 0
 
 Psi = sm.rotation(Psi, alpha_angle, beta_angle, gamma_angle)
@@ -89,7 +91,7 @@ parameters = {
 }
 
 # Create dataset and save initial state
-filename = 'UN-BN_interface'  # Name of file to save data to
+filename = 'rUN-BN_SQV-SQV'  # Name of file to save data to
 data_path = '../../data/3D/{}.hdf5'.format(filename)
 k = 0  # Array index
 
@@ -121,19 +123,18 @@ with h5py.File(data_path, 'w') as data:
     data.create_dataset('initial_state/psiM1', data=cp.asnumpy(cp.fft.ifftn(Psi[3])))
     data.create_dataset('initial_state/psiM2', data=cp.asnumpy(cp.fft.ifftn(Psi[4])))
 
-
 # --------------------------------------------------------------------------------------------------------------------
 # Imaginary time:
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
     # Kinetic evolution:
-    Psi = sm.first_kinetic_evo(Psi, A, B, C)
+    sm.first_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
 
     # Non-linear evolution:
     Psi = sm.nonlin_evo(Psi[0], Psi[1], Psi[2], Psi[3], Psi[4], c0, c2, c4, V, p, q, dt, spin_f)
 
     # Kinetic evolution:
-    Psi = sm.last_kinetic_evo(Psi, A, B, C)
+    sm.last_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
 
     # Renormalise  atom number and fix phase:
     for ii in range(len(Psi)):
