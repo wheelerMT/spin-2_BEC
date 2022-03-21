@@ -6,7 +6,7 @@ import h5py
 # --------------------------------------------------------------------------------------------------------------------
 # Spatial and Potential parameters:
 # --------------------------------------------------------------------------------------------------------------------
-Nx, Ny, Nz = 64, 64, 64  # Number of grid points
+Nx, Ny, Nz = 128, 128, 128  # Number of grid points
 Mx, My, Mz = Nx // 2, Ny // 2, Nz // 2
 dx, dy, dz = 20 / Nx, 20 / Ny, 20 / Nz  # Grid spacing
 dkx, dky, dkz = np.pi / (Mx * dx), np.pi / (My * dy), np.pi / (Mz * dz)  # K-space spacing
@@ -27,7 +27,7 @@ Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
 
 # Controlled variables:
 spin_f = 2  # Spin-2
-omega_rot = 0.2
+omega_rot = 0.3
 omega_trap = 1
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0.  # Linear Zeeman
@@ -37,7 +37,7 @@ c2 = np.where(Z <= 0, 1000, -250)
 c4 = 1000
 
 # Time steps, number and wavefunction save variables
-Nt = 2500
+Nt = 10000
 Nframe = 50  # Saves data every Nframe time steps
 dt = -1j * 1e-2  # Time step
 t = 0.
@@ -50,13 +50,13 @@ phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
 eta = np.where(Z <= 0, 0, Z)  # Parameter used to interpolate between states
-eta = np.where(Z > 2, 2, eta)
+eta = np.where(Z > 0, 2, eta)
 
 # Generate initial wavefunctions:
-psiP2 = cp.sqrt(Tf) * 1 / cp.sqrt(3) * cp.sqrt((1 + eta))
+psiP2 = cp.sqrt(Tf) * 1 / cp.sqrt(3) * cp.exp(1j * phi) * cp.sqrt((1 + eta))
 psiP1 = cp.zeros((Nx, Ny, Nz))
 psi0 = cp.zeros((Nx, Ny, Nz))
-psiM1 = cp.sqrt(Tf) * 1 / cp.sqrt(3) * cp.sqrt((2 - eta))
+psiM1 = cp.sqrt(Tf) * 1 / cp.sqrt(3) * cp.exp(1j * phi) * cp.sqrt((2 - eta))
 psiM2 = cp.zeros((Nx, Ny, Nz))
 
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
@@ -89,7 +89,7 @@ parameters = {
 }
 
 # Create dataset and save initial state
-filename = 'C-FM=2_interface'  # Name of file to save data to
+filename = 'rC-FM=2_SQV-SQV'  # Name of file to save data to
 data_path = '../../data/3D/{}.hdf5'.format(filename)
 k = 0  # Array index
 
@@ -126,13 +126,13 @@ with h5py.File(data_path, 'w') as data:
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
     # Kinetic evolution:
-    Psi = sm.first_kinetic_evo(Psi, A, B, C)
+    sm.first_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
 
     # Non-linear evolution:
     Psi = sm.nonlin_evo(Psi[0], Psi[1], Psi[2], Psi[3], Psi[4], c0, c2, c4, V, p, q, dt, spin_f)
 
     # Kinetic evolution:
-    Psi = sm.last_kinetic_evo(Psi, A, B, C)
+    sm.last_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
 
     # Renormalise  atom number and fix phase:
     for ii in range(len(Psi)):
