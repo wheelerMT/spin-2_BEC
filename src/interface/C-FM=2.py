@@ -49,8 +49,8 @@ phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-eta = np.where(Z <= 0, 0, Z)  # Parameter used to interpolate between states
-eta = np.where(Z > 0, 2, eta)
+eta = np.where(Z < -1, 0, Z + 1)  # Parameter used to interpolate between states
+eta = np.where(Z > 1, 2, eta)
 
 # Generate initial wavefunctions:
 psiP2 = cp.sqrt(Tf) * 1 / cp.sqrt(3) * cp.exp(1j * phi) * cp.sqrt((1 + eta))
