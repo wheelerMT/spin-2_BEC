@@ -102,7 +102,7 @@ def nonlin_evo(psiP2, psiP1, psi0, psiM1, psiM2, c0, c2, c4, V, p, q, dt, spin_f
     # Evolve (c0+c4)*n + (V + pm + qm^2):
     for ii in range(len(Wfn)):
         mF = spin_f - ii
-        Wfn[ii] *= cp.exp(-1j * dt * ((c0 + c4) * n + V + p * mF + q * mF ** 2))
+        Wfn[ii] *= cp.exp(-1j * dt * ((c0 + c4) * n + V - p * mF + q * mF ** 2))
 
     return Wfn
 
