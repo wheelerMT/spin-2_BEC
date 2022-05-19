@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import sqrt, conj
 from numba import njit
 
 """File containing functions for calculating certain diagnostics accelerated using numba"""
@@ -23,7 +24,7 @@ def normalise_wfn(Wfn):
     n = calc_density(Wfn)
 
     # Normalise wavefunction
-    Zeta = [wfn / np.sqrt(n) for wfn in Wfn]
+    Zeta = [wfn / sqrt(n) for wfn in Wfn]
 
     # Correct division by small numbers outside of trap
     for zeta in Zeta:
@@ -43,11 +44,14 @@ def calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2):
     :return: fp, fz: perpendicular and longitudinal spin vectors
     """
 
-    fp = np.sqrt(6) * (psiP1 * np.conj(psi0) + psi0 * np.conj(psiM1)) + \
-         2 * (psiM1 * np.conj(psiM2) + psiP2 * np.conj(psiP1))
+    fx = conj(psiM2) * psiM1 + conj(psiM1) * (sqrt(3 / 2) * psi0 + psiM2) + conj(psi0) * sqrt(3 / 2) * (psiP1 + psiM1) \
+         + conj(psiP1) * (psiP2 + sqrt(3 / 2) * psi0) + conj(psiP2) * psiP1
+    fy = 1j * (conj(psiM2) * psiM1 + conj(psiM1) * (sqrt(3 / 2) * psi0 - psiM2)
+               + conj(psi0) * sqrt(3 / 2) * (psiP1 - psiM1) + conj(psiP1) * (psiP2 - sqrt(3 / 2) * psi0)
+               - conj(psiP2) * psiP1)
     fz = 2 * (np.abs(psiP2) ** 2 - np.abs(psiM2) ** 2) + np.abs(psiP1) ** 2 - np.abs(psiM1) ** 2
 
-    return fp, fz
+    return fx, fy, fz
 
 
 @njit
@@ -62,7 +66,7 @@ def calc_spin_singlet_duo(zetaP2, zetaP1, zeta0, zetaM1, zetaM2):
     """
 
     # Return a20
-    return 1 / (np.sqrt(5)) * (2 * zetaP2 * zetaM2 - 2 * zetaP1 * zetaM1 + zeta0 ** 2)
+    return 1 / (sqrt(5)) * (2 * zetaP2 * zetaM2 - 2 * zetaP1 * zetaM1 + zeta0 ** 2)
 
 
 @njit
@@ -77,5 +81,5 @@ def calc_spin_singlet_trio(zetaP2, zetaP1, zeta0, zetaM1, zetaM2):
     """
 
     # Return a30
-    return (3 * np.sqrt(6) / 2 * (zetaP1 ** 2 * zetaM2 + zetaM1 ** 2 * zetaP2)
+    return (3 * sqrt(6) / 2 * (zetaP1 ** 2 * zetaM2 + zetaM1 ** 2 * zetaP2)
             + zeta0 * (zeta0 ** 2 - 3 * zetaP1 * zetaM1 - 6 * zetaP2 * zetaM2))
