@@ -53,7 +53,7 @@ phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
 # Spin rotation on wavefunction:
-r = cp.sqrt(X ** 2 + Y ** 2 + Z ** 2)
+r = cp.sqrt(X ** 2 + Y ** 2)
 alpha_angle = 0
 beta_angle = cp.pi / 2 * (1 + cp.tanh(r - 1))
 gamma_angle = 0
