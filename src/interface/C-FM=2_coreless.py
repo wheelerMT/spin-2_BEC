@@ -73,7 +73,6 @@ psiM2 = cp.sqrt(Tf / 3) * cp.exp(4j * phi) * (S ** 4 * cp.sqrt(1 + eta) + 2 * C 
 
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 N = [dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi]  # Atom number of each component
-theta_fix = [cp.angle(wfn) for wfn in Psi]
 Psi = [cp.fft.fftn(wfn) for wfn in Psi]  # Transforming wfn to Fourier space
 
 Ek = 0.5 * (Kx ** 2 + Ky ** 2 + Kz ** 2)
@@ -139,7 +138,7 @@ for i in range(Nt):
     # Kinetic evolution:
     sm.last_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
 
-    # Renormalise  atom number and fix phase:
+    # Renormalise  atom number:
     for ii in range(len(Psi)):
         Psi[ii] = cp.fft.fftn(cp.sqrt(N[ii]) * cp.fft.ifftn(Psi[ii]) / cp.sqrt(cp.sum(abs(cp.fft.ifftn(Psi[ii])) ** 2)))
 
