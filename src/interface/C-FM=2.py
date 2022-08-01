@@ -32,9 +32,9 @@ omega_trap = 1
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0.  # Linear Zeeman
 q = 0  # Quadratic Zeeman
-c0 = 5000
-c2 = np.where(Z <= 0, 1000, -250)
-c4 = 1000
+c0 = 10000
+c2 = np.where(Z <= 0, 2000, -500)
+c4 = 2000
 
 # Time steps, number and wavefunction save variables
 Nt = 5000
