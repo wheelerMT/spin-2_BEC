@@ -27,7 +27,7 @@ Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
 
 # Controlled variables:
 spin_f = 2  # Spin-2
-omega_rot = 0.3
+omega_rot = 0.
 omega_trap = 1
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0.  # Linear Zeeman
@@ -37,20 +37,20 @@ c2 = np.where(Z <= 0, 1000, -250)
 c4 = 1000
 
 # Time steps, number and wavefunction save variables
-Nt = 10000
-Nframe = 50  # Saves data every Nframe time steps
+Nt = 5000
+Nframe = 500  # Saves data every Nframe time steps
 dt = -1j * 1e-2  # Time step
 t = 0.
 
 # --------------------------------------------------------------------------------------------------------------------
 # Generating initial state:
 # --------------------------------------------------------------------------------------------------------------------
-phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
+phi = cp.arctan2(Y - 0.1, X - 0.1)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-eta = np.where(Z < -1, 0, Z + 1)  # Parameter used to interpolate between states
-eta = np.where(Z > 1, 2, eta)
+sigma = 2.5
+eta = (2 / (1 + cp.exp(-sigma * Z)))
 
 # Generate initial wavefunctions:
 psiP2 = cp.sqrt(Tf) * 1 / cp.sqrt(3) * cp.exp(1j * phi) * cp.sqrt((1 + eta))
@@ -89,7 +89,7 @@ parameters = {
 }
 
 # Create dataset and save initial state
-filename = 'rC-FM=2_SQV-SQV'  # Name of file to save data to
+filename = 'C-FM=2_SQV-SQV'  # Name of file to save data to
 data_path = '../../data/3D/{}.hdf5'.format(filename)
 k = 0  # Array index
 
