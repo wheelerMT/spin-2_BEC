@@ -31,8 +31,8 @@ omega_trap = 1
 omega_rot = 0.
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
-q = np.where(abs(Z) <= 1, -Z / 2, 0.5)  # Quadratic Zeeman
-q = np.where(Z > 1, -0.5, q)
+q = np.where(abs(Z) <= 1, Z / 2, -0.5)  # Quadratic Zeeman
+q = np.where(Z > 1, 0.5, q)
 
 c0 = 1e4
 c2 = 100
