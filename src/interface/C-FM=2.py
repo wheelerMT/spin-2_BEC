@@ -45,7 +45,7 @@ t = 0.
 # --------------------------------------------------------------------------------------------------------------------
 # Generating initial state:
 # --------------------------------------------------------------------------------------------------------------------
-phi = cp.arctan2(Y - 0.1, X - 0.1)  # Phase is azimuthal angle around the core
+phi = cp.arctan2(Y - 0.01, X - 0.01)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
