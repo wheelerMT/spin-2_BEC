@@ -28,31 +28,31 @@ Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
 # Controlled variables:
 spin_f = 2  # Spin-2
 omega_trap = 1
-omega_rot = 0.2
+omega_rot = 0.
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
-q = np.where(abs(Z) <= 1, -Z, 1)  # Quadratic Zeeman
-q = np.where(Z > 1, -1, q)
+q = np.where(abs(Z) <= 1, -Z / 2, 0.5)  # Quadratic Zeeman
+q = np.where(Z > 1, -0.5, q)
 
 c0 = 1e4
-c2 = 1000
-c4 = -1000
+c2 = 100
+c4 = -100
 
 # Time steps, number and wavefunction save variables
-Nt = 10000
-Nframe = 50  # Saves data every Nframe time steps
+Nt = 5000
+Nframe = 500  # Saves data every Nframe time steps
 dt = -1j * 1e-2  # Time step
 t = 0.
 
 # --------------------------------------------------------------------------------------------------------------------
 # Generating initial state:
 # --------------------------------------------------------------------------------------------------------------------
-phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
+phi = cp.arctan2(Y - 0.1, X - 0.1)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-eta = np.where(Z <= 0, -Z / 3, 0)  # Parameter used to interpolate between states
-eta = np.where(Z <= -3, 1, eta)
+sigma = 2.5
+eta = (1 / (1 + cp.exp(-sigma * Z)))
 
 # Generate initial wavefunctions:
 psiP2 = cp.sqrt(Tf) * cp.exp(1j * phi) * cp.sqrt((1 - eta ** 2) / 2)
@@ -64,8 +64,8 @@ psiM2 = cp.sqrt(Tf) * cp.exp(1j * phi) * cp.sqrt((1 - eta ** 2) / 2)
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 
 # Spin rotation on wavefunction:
-alpha_angle = 0
-beta_angle = cp.pi / 4
+alpha_angle = 0.01
+beta_angle = 0.01
 gamma_angle = 0
 
 Psi = sm.rotation(Psi, alpha_angle, beta_angle, gamma_angle)
@@ -91,7 +91,7 @@ parameters = {
 }
 
 # Create dataset and save initial state
-filename = 'rUN-BN_SQV-SQV'  # Name of file to save data to
+filename = 'UN-BN_SQV-SQV'  # Name of file to save data to
 data_path = '../../data/3D/{}.hdf5'.format(filename)
 k = 0  # Array index
 
