@@ -31,27 +31,27 @@ omega_trap = 1
 omega_rot = 0.
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
-q = np.where(abs(Z) <= 1, Z / 2, -0.5)  # Quadratic Zeeman
-q = np.where(Z > 1, 0.5, q)
+sigma = 2.5
+scale = 1
+q = scale * (1 / (1 + np.exp(-sigma * Z)) - 0.5)
 
-c0 = 1e4
-c2 = 100
-c4 = -100
+c0 = 1.32e4
+c2 = 146
+c4 = -129
 
 # Time steps, number and wavefunction save variables
-Nt = 5000
+Nt = 50000
 Nframe = 500  # Saves data every Nframe time steps
-dt = -1j * 1e-2  # Time step
+dt = -1j * 5e-3  # Time step
 t = 0.
 
 # --------------------------------------------------------------------------------------------------------------------
 # Generating initial state:
 # --------------------------------------------------------------------------------------------------------------------
-phi = cp.arctan2(Y - 0.1, X - 0.1)  # Phase is azimuthal angle around the core
+phi = cp.arctan2(Y - 0.01, X - 0.01)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-sigma = 2.5
 eta = (1 / (1 + cp.exp(-sigma * Z)))
 
 # Generate initial wavefunctions:
@@ -127,6 +127,9 @@ with h5py.File(data_path, 'w') as data:
 # Imaginary time:
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
+    if i == 400:
+        dt = 5e-3
+
     # Kinetic evolution:
     sm.first_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
 
@@ -136,9 +139,10 @@ for i in range(Nt):
     # Kinetic evolution:
     sm.last_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
 
-    # Renormalise  atom number and fix phase:
-    for ii in range(len(Psi)):
-        Psi[ii] = cp.fft.fftn(cp.sqrt(N[ii]) * cp.fft.ifftn(Psi[ii]) / cp.sqrt(cp.sum(abs(cp.fft.ifftn(Psi[ii])) ** 2)))
+    # Renormalise  atom number:
+    if i <= 400:
+        for ii in range(len(Psi)):
+            Psi[ii] = cp.fft.fftn(cp.sqrt(N[ii]) * cp.fft.ifftn(Psi[ii]) / cp.sqrt(cp.sum(abs(cp.fft.ifftn(Psi[ii])) ** 2)))
 
     if i % 100 == 0:
         print('t = {}'.format(i * dt))
