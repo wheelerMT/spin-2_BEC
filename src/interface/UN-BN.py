@@ -41,8 +41,8 @@ c4 = -129
 
 # Time steps, number and wavefunction save variables
 Nt = 50000
-Nframe = 500  # Saves data every Nframe time steps
-dt = -1j * 5e-3  # Time step
+Nframe = 250  # Saves data every Nframe time steps
+dt = -1j * 1e-2  # Time step
 t = 0.
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -127,8 +127,9 @@ with h5py.File(data_path, 'w') as data:
 # Imaginary time:
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
-    if i == 400:
-        dt = 5e-3
+    if i == 200:
+        gamma = 1e-2
+        dt = (1 - gamma * 1j) * 5e-3
 
     # Kinetic evolution:
     sm.first_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
@@ -140,9 +141,8 @@ for i in range(Nt):
     sm.last_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
 
     # Renormalise  atom number:
-    if i <= 400:
-        for ii in range(len(Psi)):
-            Psi[ii] = cp.fft.fftn(cp.sqrt(N[ii]) * cp.fft.ifftn(Psi[ii]) / cp.sqrt(cp.sum(abs(cp.fft.ifftn(Psi[ii])) ** 2)))
+    for ii in range(len(Psi)):
+        Psi[ii] = cp.fft.fftn(cp.sqrt(N[ii]) * cp.fft.ifftn(Psi[ii]) / cp.sqrt(cp.sum(abs(cp.fft.ifftn(Psi[ii])) ** 2)))
 
     if i % 100 == 0:
         print('t = {}'.format(i * dt))
