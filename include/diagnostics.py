@@ -33,7 +33,7 @@ def normalise_wfn(Wfn):
     return Zeta
 
 
-@njit
+@njit(parallel=True)
 def calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2):
     """
     :param psiP2: psi_+2 component
@@ -54,7 +54,7 @@ def calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2):
     return fx, fy, fz
 
 
-@njit
+@njit(parallel=True)
 def calc_spin_singlet_duo(zetaP2, zetaP1, zeta0, zetaM1, zetaM2):
     """
     :param zetaP2: normalised psi_+2 component
@@ -69,7 +69,7 @@ def calc_spin_singlet_duo(zetaP2, zetaP1, zeta0, zetaM1, zetaM2):
     return 1 / (sqrt(5)) * (2 * zetaP2 * zetaM2 - 2 * zetaP1 * zetaM1 + zeta0 ** 2)
 
 
-@njit
+@njit(parallel=True)
 def calc_spin_singlet_trio(zetaP2, zetaP1, zeta0, zetaM1, zetaM2):
     """
     :param zetaP2: normalised psi_+2 component
