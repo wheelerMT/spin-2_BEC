@@ -32,13 +32,13 @@ omega_trap = 1
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0.  # Linear Zeeman
 q = 0  # Quadratic Zeeman
-c0 = 10000
-c2 = np.where(Z <= 0, 2000, -500)
-c4 = 2000
+c0 = 1.32e4
+c2 = 146
+c4 = -129
 
 # Time steps, number and wavefunction save variables
-Nt = 5000
-Nframe = 50  # Saves data every Nframe time steps
+Nt = 50000
+Nframe = 250  # Saves data every Nframe time steps
 dt = -1j * 1e-2  # Time step
 t = 0.
 
@@ -129,6 +129,10 @@ with h5py.File(data_path, 'w') as data:
 # Imaginary time:
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
+    if i == 200:
+        gamma = 5e-3
+        dt = (1 - gamma * 1j) * 5e-3  # Time step
+
     # Kinetic evolution:
     sm.first_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
 
