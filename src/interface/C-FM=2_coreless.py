@@ -32,8 +32,10 @@ omega_trap = 1
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0.  # Linear Zeeman
 q = 0  # Quadratic Zeeman
+sigma = 3
+sigmoid = 1 - 2 / (1 + np.exp(-sigma * Z))
 c0 = 1.32e4
-c2 = 146
+c2 = 146 * sigmoid
 c4 = -129
 
 # Time steps, number and wavefunction save variables
