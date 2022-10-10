@@ -8,7 +8,7 @@ matplotlib.use('TkAgg')
 
 
 # Load in data:
-data_path = 'UN-BN_SQV-VF'  # input('Enter file path of data to view: ')
+data_path = 'frames/199f_C-FM=2_SQV-SQV'  # input('Enter file path of data to view: ')
 data = h5py.File('../../data/3D/{}.hdf5'.format(data_path), 'r')
 num_of_frames = data['wavefunction/psiP2'].shape[-1]
 print("Working with {} frames of data".format(num_of_frames))
@@ -43,8 +43,8 @@ Nx, Ny, Nz = len(x), len(y), len(z)
 # Generate figure:
 fig = plt.figure(figsize=(10, 6.4))
 grid = ImageGrid(fig, 111,          # as in plt.subplot(111)
-                 nrows_ncols=(3, 5),
-                 axes_pad=0.15,
+                 nrows_ncols=(2, 3),
+                 axes_pad=0.30,
                  share_all=True,
                  cbar_location="right",
                  cbar_mode="single",
@@ -56,51 +56,34 @@ for axis in grid:
     axis.set_aspect('equal')
 
 # Axis titles:
-axis_titles = [r'$|\psi_2|^2$', r'$|\psi_1|^2$', r'$|\psi_0|^2$', r'$|\psi_{-1}|^2$', r'$|\psi_{-2}|^2$']
+axis_titles = [r'$|\psi_2|^2$', r'$|\psi_1|^2$', r'$|\psi_0|^2$', r'$|\psi_{-1}|^2$', r'$|\psi_{-2}|^2$', r'$n$']
 
 # Plot density of last frame of data
 for i, axis in enumerate(grid):
     # Plot slice through z-axis:
     if i <= 4:
-        if i == 0:
+        if i == 0 or i == 3:
             axis.set_ylabel(r'$z/\ell$')
-
-        axis.set_title(axis_titles[i])
+        if i > 2:
+            axis.set_xlabel(r'$x/\ell$')
 
         plot = axis.contourf(X[:, Ny // 2, :], Z[:, Ny // 2, :], abs(Wfn[i][:, Ny // 2, :]) ** 2,
                              np.linspace(0, dens_max, 100), cmap='jet')
 
-        if i == len(grid) - 1:
-            # Colorbar
-            axis.cax.colorbar(plot)
-            axis.cax.toggle_label(True)
+    else:
 
-    # Plot slice through z-axis:
-    if 4 < i <= 9:
-        if i == 5:
-            axis.set_ylabel(r'$y/\ell$')
-
-        plot = axis.contourf(X[:, :, Nz // 2 + 10], Y[:, :, Nz // 2 + 10], abs(Wfn[i-5][:, :, Nz // 2 + 10]) ** 2,
+        plot = axis.contourf(X[:, Ny // 2, :], Z[:, Ny // 2, :], total_dens[:, Ny // 2, :],
                              np.linspace(0, dens_max, 100), cmap='jet')
 
-        if i == len(grid) - 1:
-            # Colorbar
-            axis.cax.colorbar(plot)
-            axis.cax.toggle_label(True)
-
-    if 9 < i:
-        if i == 10:
-            axis.set_ylabel(r'$y/\ell$')
         axis.set_xlabel(r'$x/\ell$')
-        plot = axis.contourf(X[:, :, Nz // 2 - 10], Y[:, :, Nz // 2 - 10], abs(Wfn[i-10][:, :, Nz // 2 - 10]) ** 2,
-                             np.linspace(0, dens_max, 100), cmap='jet')
 
-        if i == len(grid) - 1:
-            # Colorbar
-            axis.cax.colorbar(plot)
-            axis.cax.toggle_label(True)
+        # Colorbar
+        axis.cax.colorbar(plot)
+        axis.cax.toggle_label(True)
+
+    axis.set_title(axis_titles[i])
 
 
 plt.tight_layout()
-plt.savefig('../../data/plots/UN-BN/{}_dens.png'.format(data_path))
+# plt.savefig('../../data/plots/UN-BN/{}_dens.png'.format(data_path))
 plt.show()
