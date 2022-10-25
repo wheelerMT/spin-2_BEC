@@ -32,7 +32,7 @@ omega_rot = 0.
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
 sigma = 2.5
-scale = 0.1
+scale = 0.3
 q = scale * (1 / (1 + np.exp(-sigma * Z)) - 0.5)
 
 c0 = 1.32e4
