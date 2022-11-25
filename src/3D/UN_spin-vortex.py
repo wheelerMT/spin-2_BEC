@@ -6,7 +6,7 @@ import h5py
 # --------------------------------------------------------------------------------------------------------------------
 # Spatial and Potential parameters:
 # --------------------------------------------------------------------------------------------------------------------
-Nx, Ny, Nz = 64, 64, 64  # Number of grid points
+Nx, Ny, Nz = 128, 128, 128  # Number of grid points
 Mx, My, Mz = Nx // 2, Ny // 2, Nz // 2
 dx, dy, dz = 20 / Nx, 20 / Ny, 20 / Nz  # Grid spacing
 dkx, dky, dkz = np.pi / (Mx * dx), np.pi / (My * dy), np.pi / (Mz * dz)  # K-space spacing
@@ -31,42 +31,32 @@ omega_trap = 1
 omega_rot = 0.
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
-gradient = 0.25
-scale = 0.3
-# q = scale * (1 / (1 + np.exp(-sigma * Z)) - 0.5)
-q = gradient * Z + 0.5
-q[q > 1] = 1
-q[q < 0] = 0
-q -= 0.5
-q *= scale
+
+q = 0.05
 
 c0 = 1.32e4
 c2 = 146
 c4 = -129
 
 # Time steps, number and wavefunction save variables
-Nt = 10000
-Nframe = 100  # Saves data every Nframe time steps
+Nt = 5000
+Nframe = 250  # Saves data every Nframe time steps
 dt = -1j * 1e-2  # Time step
 t = 0.
 
 # --------------------------------------------------------------------------------------------------------------------
 # Generating initial state:
 # --------------------------------------------------------------------------------------------------------------------
-phi = cp.arctan2(Y - 0.01, X - 0.01)  # Phase is azimuthal angle around the core
+phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-eta = gradient * Z + 0.5
-eta[eta > 1] = 1
-eta[eta < 0] = 0
-
 # Generate initial wavefunctions:
-psiP2 = cp.sqrt(Tf) * cp.exp(1j * phi) / (2 * cp.sqrt(2)) * (cp.sqrt(1 - eta ** 2) + eta * cp.sqrt(3))
+psiP2 = cp.sqrt(Tf) * cp.exp(1j * phi) / 4 * cp.sqrt(6)
 psiP1 = cp.zeros((Nx, Ny, Nz))
-psi0 = cp.sqrt(Tf) * 0.5 * (cp.sqrt(1 - eta ** 2) * cp.sqrt(3) - eta)
+psi0 = cp.sqrt(Tf) / 2
 psiM1 = cp.zeros((Nx, Ny, Nz))
-psiM2 = cp.sqrt(Tf) * cp.exp(-1j * phi) / (2 * cp.sqrt(2)) * (cp.sqrt(1 - eta ** 2) + eta * cp.sqrt(3))
+psiM2 = cp.sqrt(Tf) * cp.exp(-1j * phi) / 4 * cp.sqrt(6)
 
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 
@@ -92,7 +82,7 @@ parameters = {
 }
 
 # Create dataset and save initial state
-filename = 'UN-BN_SV-SV_005'  # Name of file to save data to
+filename = 'UN_SV'  # Name of file to save data to
 data_path = '../../data/3D/{}.hdf5'.format(filename)
 k = 0  # Array index
 
@@ -128,9 +118,6 @@ with h5py.File(data_path, 'w') as data:
 # Imaginary time:
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
-    # if i == 200:
-        # gamma = 1e-2
-        # dt = (1 - gamma * 1j) * 5e-3
 
     # Kinetic evolution:
     sm.first_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)

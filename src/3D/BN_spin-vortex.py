@@ -28,50 +28,39 @@ Kx, Ky, Kz = cp.fft.fftshift(Kx), cp.fft.fftshift(Ky), cp.fft.fftshift(Kz)
 # Controlled variables:
 spin_f = 2  # Spin-2
 omega_trap = 1
-omega_rot = 0.
+omega_rot = 0.3
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
-gradient = 0.25
-scale = 0.3
-# q = scale * (1 / (1 + np.exp(-sigma * Z)) - 0.5)
-q = gradient * Z + 0.5
-q[q > 1] = 1
-q[q < 0] = 0
-q -= 0.5
-q *= scale
+q = -1
 
-c0 = 1.32e4
-c2 = 146
-c4 = -129
+c0 = 1e4
+c2 = 1000
+c4 = -1000
 
 # Time steps, number and wavefunction save variables
-Nt = 10000
-Nframe = 100  # Saves data every Nframe time steps
+Nt = 5000
+Nframe = 50  # Saves data every Nframe time steps
 dt = -1j * 1e-2  # Time step
 t = 0.
 
 # --------------------------------------------------------------------------------------------------------------------
 # Generating initial state:
 # --------------------------------------------------------------------------------------------------------------------
-phi = cp.arctan2(Y - 0.01, X - 0.01)  # Phase is azimuthal angle around the core
+phi = cp.arctan2(Y - 1, X - 1)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-eta = gradient * Z + 0.5
-eta[eta > 1] = 1
-eta[eta < 0] = 0
-
 # Generate initial wavefunctions:
-psiP2 = cp.sqrt(Tf) * cp.exp(1j * phi) / (2 * cp.sqrt(2)) * (cp.sqrt(1 - eta ** 2) + eta * cp.sqrt(3))
+psiP2 = cp.sqrt(Tf) * cp.exp(1j * phi) * cp.sqrt(2) / 4
 psiP1 = cp.zeros((Nx, Ny, Nz))
-psi0 = cp.sqrt(Tf) * 0.5 * (cp.sqrt(1 - eta ** 2) * cp.sqrt(3) - eta)
+psi0 = cp.sqrt(Tf) * cp.sqrt(3) / 2
 psiM1 = cp.zeros((Nx, Ny, Nz))
-psiM2 = cp.sqrt(Tf) * cp.exp(-1j * phi) / (2 * cp.sqrt(2)) * (cp.sqrt(1 - eta ** 2) + eta * cp.sqrt(3))
+psiM2 = cp.sqrt(Tf) * cp.exp(-1j * phi) * cp.sqrt(2) / 4
 
 Psi = [psiP2, psiP1, psi0, psiM1, psiM2]  # Full 5x1 wavefunction
 
 # Spin rotation on wavefunction:
-alpha_angle = 0.01
+alpha_angle = 0
 beta_angle = 0.01
 gamma_angle = 0
 
@@ -79,6 +68,12 @@ Psi = sm.rotation(Psi, alpha_angle, beta_angle, gamma_angle)
 N = [dx * dy * cp.sum(cp.abs(wfn) ** 2) for wfn in Psi]  # Atom number of each component
 theta_fix = [cp.angle(wfn) for wfn in Psi]
 Psi = [cp.fft.fftn(wfn) for wfn in Psi]  # Transforming wfn to Fourier space
+
+# Helper parameters for kinetic evolution
+Ek = 0.5 * (Kx ** 2 + Ky ** 2 + Kz ** 2)
+A = cp.exp(-1j * Ek * dt / 2)
+B = cp.exp(-1j * Ek * dt / 2)
+C = cp.exp(-1j * Ek * dt / 2)
 
 # Store parameters in dictionary for saving
 parameters = {
@@ -92,7 +87,7 @@ parameters = {
 }
 
 # Create dataset and save initial state
-filename = 'UN-BN_SV-SV_005'  # Name of file to save data to
+filename = 'BN_spin-vortex'  # Name of file to save data to
 data_path = '../../data/3D/{}.hdf5'.format(filename)
 k = 0  # Array index
 
@@ -128,10 +123,6 @@ with h5py.File(data_path, 'w') as data:
 # Imaginary time:
 # --------------------------------------------------------------------------------------------------------------------
 for i in range(Nt):
-    # if i == 200:
-        # gamma = 1e-2
-        # dt = (1 - gamma * 1j) * 5e-3
-
     # Kinetic evolution:
     sm.first_kinetic_rot_evo_3d(Psi, X, Y, Kx, Ky, Kz, omega_rot, spin_f, dt)
 

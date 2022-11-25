@@ -1,18 +1,19 @@
 import h5py
 import numpy as np
-import include.diagnostics as diag
 import matplotlib.pyplot as plt
-from scipy.ndimage import gaussian_filter1d
-plt.rcParams.update({'font.size': 18})
+import include.diagnostics as diag
+import matplotlib
+
+matplotlib.use('TkAgg')
 
 # Load in data:
-data_path = 'frames/10f_C-FM=2_third-SQV'   # input('Enter file path of data to view: ')
-data = h5py.File('../../data/3D/{}.hdf5'.format(data_path), 'r')
+data_path = 'C-FM=2_coreless'  # input('Enter file path of data to view: ')
+data = h5py.File('../data/3D/{}.hdf5'.format(data_path), 'r')
 num_of_frames = data['wavefunction/psiP2'].shape[-1]
 print("Working with {} frames of data".format(num_of_frames))
 
 # Frame of data to work with
-frame = 1
+frame = 10
 
 # Wavefunction
 psiP2 = data['wavefunction/psiP2'][:, :, :, frame]
@@ -34,6 +35,11 @@ x, y, z = data['grid/x'], data['grid/y'], data['grid/y']
 dx, dy, dz = x[1] - x[0], y[1] - y[0], z[1] - z[0]
 X, Y, Z = np.meshgrid(x[:], y[:], z[:], indexing='ij')
 Nx, Ny, Nz = len(x), len(y), len(z)
+c0 = data['parameters/c0'][...]
+c2 = data['parameters/c2'][...]
+scale = 0.8
+g = c0 + 4 * c2
+Rtf = scale * np.ones((Nx, Ny, Nz)) * (15 * g / (4 * np.pi)) ** 0.2
 
 # Total density
 n = diag.calc_density(Wfn)
@@ -49,35 +55,21 @@ F = np.sqrt(abs(fx) ** 2 + abs(fy) ** 2 + fz ** 2)
 spin_expec = F / n
 spin_expec[n < 1e-6] = 0
 
-# Singlet trio
-a30 = diag.calc_spin_singlet_trio(Zeta[0], Zeta[1], Zeta[2], Zeta[3], Zeta[4])
+# Set up plot
+fig, ax = plt.subplots(1, )
+ax.set_xlabel('$x/\ell$')
+ax.set_ylabel('$y/\ell$')
 
-z_index = Nz // 2 + 10
+# Plot spin magnitude
+z_slice = Nz // 2 + 10
+extent = X.min(), X.max(), Y.min(), Y.max()  # Axis limits
+spin_mag_plot = ax.imshow(spin_expec[:, :, z_slice], vmin=0, vmax=2, cmap='PuRd', extent=extent)
 
-# Calculate spherical sum
-centerx = Nx // 2
-centery = Ny // 2
-box_radius = int(np.ceil(np.sqrt(Nx ** 2 + Ny ** 2) / 2) + 1)
-nc = np.zeros(box_radius,)  # Counts the number of times we sum over a given shell
-spin_expec_r = np.zeros(box_radius, )
-a30_r = np.zeros(box_radius, )
-for i in range(Nx):
-    for j in range(Ny):
-        r = int(np.ceil(np.sqrt((i - centerx) ** 2 + (j - centery) ** 2)))
-        nc[r] += 1
+# Generate 2D slices
+X, Y = X[:, :, z_slice], Y[:, :, z_slice]
+fx, fy = fx[:, :, z_slice], fy[:, :, z_slice]
+plottable_points = np.where(np.sqrt(X ** 2 + Y ** 2) < Rtf[:, :, z_slice])
 
-        spin_expec_r[r] += spin_expec[i, j, z_index]
-        a30_r[r] += abs(a30[i, j, z_index]) ** 2
-
-spin_expec_r /= nc
-a30_r /= nc
-
-r = np.sqrt(x[...] ** 2 + y[...] ** 2)
-plt.plot(r[Nx // 2:Nx // 2 + 28], spin_expec_r[:28], 'r', label=r'$|F(\vec{r})|$')
-plt.plot(r[Nx // 2:Nx // 2 + 28], a30_r[:28], 'b', label=r'$|A_{30}(\vec{r})|^2$')
-plt.xlabel(r'$r/\ell$')
-plt.ylabel('Value')
-plt.xlim(0, 6)
-plt.legend()
-# plt.savefig('../../../plots/spin-2/write-up/spin_singlet_radius.png', bbox_inches='tight')
+ax.quiver(X[plottable_points], Y[plottable_points], fx[plottable_points], fy[plottable_points], scale=1.)
+plt.colorbar(spin_mag_plot)
 plt.show()

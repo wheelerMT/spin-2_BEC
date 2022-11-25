@@ -68,13 +68,13 @@ for axis in grid:
 # Plot diagnostics
 spin_plot = grid[0].contourf(X[:, Nx // 2, :], Z[:, Nx // 2, :], abs(spin_expec[:, Nx // 2, :, 0]),
                              np.linspace(0, 2, 100), cmap='jet')
-grid[0].plot([-6, 6], [0, 0], 'w--')
+grid[0].a30_plot([-6, 6], [0, 0], 'w--')
 a20_plot = grid[1].contourf(X[:, Nx // 2, :], Z[:, Nx // 2, :], abs(a20[:, Nx // 2, :, 0]) ** 2,
                             np.linspace(0, 1 / 5, 100), cmap='jet')
-grid[1].plot([-6, 6], [0, 0], 'w--')
+grid[1].a30_plot([-6, 6], [0, 0], 'w--')
 a30_plot = grid[2].contourf(X[:, Nx // 2, :], Z[:, Nx // 2, :], abs(a30[:, Nx // 2, :, 0]) ** 2, np.linspace(0, 2, 100),
                             cmap='jet')
-grid[2].plot([-6, 6], [0, 0], 'w--')
+grid[2].a30_plot([-6, 6], [0, 0], 'w--')
 
 # Set colorbars
 grid[0].cax.colorbar(spin_plot, ticks=[0, 1, 2])
@@ -93,13 +93,13 @@ def animate(i):
 
     grid[0].contourf(X[:, Nx // 2, :], Z[:, Nx // 2, :], abs(spin_expec[:, Nx // 2, :, i]), np.linspace(0, 2, 100),
                      cmap='jet')
-    grid[0].plot([-6, 6], [0, 0], 'w--')
+    grid[0].a30_plot([-6, 6], [0, 0], 'w--')
     grid[1].contourf(X[:, Nx // 2, :], Z[:, Nx // 2, :], abs(a20[:, Nx // 2, :, i]) ** 2,
                      np.linspace(0, 1 / 5, 100), cmap='jet')
-    grid[1].plot([-6, 6], [0, 0], 'w--')
+    grid[1].a30_plot([-6, 6], [0, 0], 'w--')
     grid[2].contourf(X[:, Nx // 2, :], Z[:, Nx // 2, :], abs(a30[:, Nx // 2, :, i]) ** 2,
                      np.linspace(0, 2, 100), cmap='jet')
-    grid[2].plot([-6, 6], [0, 0], 'w--')
+    grid[2].a30_plot([-6, 6], [0, 0], 'w--')
 
     cont_dens = [grid[0], grid[1], grid[2]]
     print('On density iteration %i' % (i + 1))

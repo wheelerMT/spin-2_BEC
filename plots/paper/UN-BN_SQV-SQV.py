@@ -4,17 +4,17 @@ import matplotlib.pyplot as plt
 import include.diagnostics as diag
 from mpl_toolkits.axes_grid1 import ImageGrid
 import matplotlib
+
 matplotlib.use('TkAgg')
 
 # Load in data:
-data_path = 'UN-BN_SV-SV_025'   # input('Enter file path of data to view: ')
+data_path = 'frames/100f_rUN-BN_SQV-SQV'   # input('Enter file path of data to view: ')
 data = h5py.File('../../data/3D/{}.hdf5'.format(data_path), 'r')
 num_of_frames = data['wavefunction/psiP2'].shape[-1]
 print("Working with {} frames of data".format(num_of_frames))
-# print(data['saved_times'][...])
 
 # Frame of data to work with
-frame = 20
+frame = -1
 
 # Wavefunction
 psiP2 = data['wavefunction/psiP2'][:, :, :, frame]
@@ -47,27 +47,20 @@ Zeta = diag.normalise_wfn(Wfn)
 fx, fy, fz = diag.calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2)
 F = np.sqrt(abs(fx) ** 2 + abs(fy) ** 2 + fz ** 2)
 
-# Tophat for smoothing plots
-sigma = 0.5
-c0 = 1.32e4
-c2 = 146
-g = c0 + 4 * c2
-Rtf = (15 * g / (4 * np.pi)) ** 0.2
-tophat = 0.5 * (1 - np.tanh(sigma * (X ** 2 + Y ** 2 + Z ** 2 - Rtf ** 2)))
-
 # Calculate spin expectation
-spin_expec = tophat * F / n
+spin_expec = F / n
+spin_expec[n < 1e-6] = 0
 
 # Calculate spin-singlet terms
-a20 = tophat * diag.calc_spin_singlet_duo(Zeta[0], Zeta[1], Zeta[2], Zeta[3], Zeta[4])
+a20 = diag.calc_spin_singlet_duo(Zeta[0], Zeta[1], Zeta[2], Zeta[3], Zeta[4])
 
-a30 = tophat * diag.calc_spin_singlet_trio(Zeta[0], Zeta[1], Zeta[2], Zeta[3], Zeta[4])
+a30 = diag.calc_spin_singlet_trio(Zeta[0], Zeta[1], Zeta[2], Zeta[3], Zeta[4])
 
 # Generate figure:
-fig = plt.figure()
+fig = plt.figure(figsize=(12, 10))
 grid = ImageGrid(fig, 111,  # as in plt.subplot(111)
                  nrows_ncols=(3, 3),
-                 axes_pad=(0.4, 0.15),
+                 axes_pad=0.4,
                  share_all=True,
                  cbar_location="right",
                  cbar_mode="each",
@@ -78,6 +71,9 @@ grid = ImageGrid(fig, 111,  # as in plt.subplot(111)
 for axis in grid:
     axis.set_aspect('equal')
 
+grid[0].set_xlim(-6, 6)
+grid[0].set_ylim(-6, 6)
+
 # y and z indices for graphs:
 y_ind = Ny // 2
 z_upper_ind = Nz // 2 + 10
@@ -87,8 +83,8 @@ z_lower_ind = Nz // 2 - 10
 grid[0].set_title(r'$|<\vec{F}>|$')
 grid[1].set_title(r'$|A_{20}|^2$')
 grid[2].set_title(r'$|A_{30}|^2$')
-# grid[3].set_title(r'Z = {}'.format(z[z_upper_ind]), x=0.2, fontsize=10)
-# grid[6].set_title(r'Z = {}'.format(z[z_lower_ind]), x=0.2, fontsize=10)
+grid[3].set_title(r'Z = {}'.format(z[z_upper_ind]), x=0.2, fontsize=10)
+grid[6].set_title(r'Z = {}'.format(z[z_lower_ind]), x=0.2, fontsize=10)
 
 # Plot axis labels:
 grid[0].set_ylabel(r'$z/\ell$')
@@ -98,18 +94,18 @@ for axis in grid:
     axis.set_xlabel(r'$x/\ell$')
 
 for axis in [grid[0], grid[1], grid[2]]:
-    axis.plot([-6, 6], [0, 0], 'w--')  # Plot white dashed line at z=0
+    axis.plot([-5, 5], [0, 0], 'w--')  # Plot white dashed line at z=0
 
 # ------------------------------------------------------------------
 # Plot diagnostics
 # ------------------------------------------------------------------
 
 # First row:
-one_spin_plot = grid[0].contourf(X[:, y_ind, :], Z[:, y_ind, :], abs(spin_expec[:, y_ind, :]),
+one_spin_plot = grid[0].contourf(Y[y_ind, :, :], Z[y_ind, :, :], abs(spin_expec[:, y_ind, :]),
                                  np.linspace(0, 2.01, 100), cmap='jet')
-one_a20_plot = grid[1].contourf(X[:, y_ind, :], Z[:, y_ind, :], abs(a20[:, y_ind, :]) ** 2,
+one_a20_plot = grid[1].contourf(Y[y_ind, :, :], Z[y_ind, :, :], abs(a20[:, y_ind, :]) ** 2,
                                 np.linspace(0, 0.201, 100), cmap='jet')
-one_a30_plot = grid[2].contourf(X[:, y_ind, :], Z[:, y_ind, :], abs(a30[:, y_ind, :]) ** 2,
+one_a30_plot = grid[2].contourf(Y[y_ind, :, :], Z[y_ind, :, :], abs(a30[:, y_ind, :]) ** 2,
                                 np.linspace(0, 2.01, 100), cmap='jet')
 
 # Second row:
@@ -140,5 +136,5 @@ for i, contour in enumerate([one_a30_plot, two_a30_plot, three_a30_plot]):
     grid[(i * 3) + 2].cax.toggle_label(True)
 
 plt.tight_layout()
-# plt.savefig('../../../plots/spin-2/write-up/C-FM=2_coreless_singlets.png', bbox_inches="tight", dpi=200)
+# plt.savefig('../../data/plots/{}.png'.format(data_path), bbox_inches="tight")
 plt.show()

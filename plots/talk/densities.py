@@ -8,13 +8,13 @@ matplotlib.use('TkAgg')
 
 
 # Load in data:
-data_path = 'UN-BN_SV-SV'  # input('Enter file path of data to view: ')
+data_path = 'frames/25f_C-FM=2_SQV-SQV'  # input('Enter file path of data to view: ')
 data = h5py.File('../../data/3D/{}.hdf5'.format(data_path), 'r')
 num_of_frames = data['wavefunction/psiP2'].shape[-1]
 print("Working with {} frames of data".format(num_of_frames))
 
 # Frame of data to work with
-frame = 50
+frame = -1
 
 # Wavefunction
 psiP2 = data['wavefunction/psiP2'][:, :, :, frame]
@@ -58,38 +58,31 @@ for axis in grid:
 # Axis titles:
 axis_titles = [r'$|\psi_2|^2$', r'$|\psi_1|^2$', r'$|\psi_0|^2$', r'$|\psi_{-1}|^2$', r'$|\psi_{-2}|^2$']
 
-upper_index = Nz // 2 + 10
-lower_index = Nz // 2 - 10
-
 # Plot density of last frame of data
 for i, axis in enumerate(grid):
-    if i == 0 or i == 5:
-        axis.set_ylabel(r'$y/\ell$')
-    if i < 5:
+    # Plot slice through z-axis:
+    if i <= 4:
+        if i == 0:
+            axis.set_ylabel(r'$y/\ell$')
+        axis.set_xlabel(r'$x/\ell$')
         axis.set_title(axis_titles[i])
 
-        phase = np.angle(Wfn[i])
-        phase[total_dens < 1e-6] = np.nan  # Ignore phase outside of condensate
+        plot = axis.contourf(X[:, :, Nz // 2 + 10], Y[:, :, Nz // 2 + 10], abs(Wfn[i][:, :, Nz // 2 + 10]) ** 2,
+                             np.linspace(0, dens_max, 100), cmap='jet')
 
-        # Plot slice through y-axis:
-        plot = axis.contourf(X[:, :, upper_index], Y[:, :, upper_index], phase[:, :, upper_index],
-                             np.linspace(-np.pi, np.pi, 100), cmap='jet')
-
-    if i >= 5:
+    if i > 4:
+        if i == 5:
+            axis.set_ylabel(r'$y/\ell$')
         axis.set_xlabel(r'$x/\ell$')
-        phase = np.angle(Wfn[i - 5])
-        phase[total_dens < 1e-6] = np.nan  # Ignore phase outside of condensate
 
-        # Plot slice through y-axis:
-        plot = axis.contourf(X[:, :, lower_index], Y[:, :, lower_index], phase[:, :, lower_index],
-                             np.linspace(-np.pi, np.pi, 100), cmap='jet')
+        plot = axis.contourf(X[:, :, Nz // 2 - 10], Y[:, :, Nz // 2 - 10], abs(Wfn[i - 5][:, :, Nz // 2 - 10]) ** 2,
+                             np.linspace(0, dens_max, 100), cmap='jet')
 
-    if i == len(grid) - 1:
-        # Colorbar
-        cbar = axis.cax.colorbar(plot)
-        axis.cax.toggle_label(True)
-        cbar.set_ticks([-np.pi, np.pi])
-        cbar.set_ticklabels([r'$-\pi$', r'$\pi$'])
+        if i == len(grid) - 1:
+            # Colorbar
+            axis.cax.colorbar(plot, format='%.0e')
+            axis.cax.toggle_label(True)
 
 plt.tight_layout()
+plt.savefig('../../../plots/spin-2/talk/C-FM=2_dens.png', bbox_inches="tight")
 plt.show()
