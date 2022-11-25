@@ -33,7 +33,7 @@ V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
 sigma = 2.5
 scale = 0.3
-q = scale * (1 / (1 + np.exp(-sigma * Z)) - 0.5)
+q = scale * (sm.get_linear_interp(Z) - 0.5)
 
 c0 = 1.32e4
 c2 = 146
@@ -52,7 +52,7 @@ phi = cp.arctan2(Y - 0.01, X - 0.01)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-eta = (1 / (1 + cp.exp(-sigma * Z)))
+eta = sm.get_linear_interp(Z)
 
 # Generate initial wavefunctions:
 psiP2 = cp.sqrt(Tf) * cp.exp(1j * phi) * cp.sqrt((1 - eta ** 2) / 2)

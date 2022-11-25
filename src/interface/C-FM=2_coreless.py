@@ -32,10 +32,8 @@ omega_trap = 1
 V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0.  # Linear Zeeman
 q = 0  # Quadratic Zeeman
-sigma = 3
-sigmoid = 1 - 2 / (1 + np.exp(-sigma * Z))
 c0 = 1.32e4
-c2 = 146 * sigmoid
+c2 = 146 * 2 * (sm.get_linear_interp(Z) - 0.5)
 c4 = -129
 
 # Time steps, number and wavefunction save variables
@@ -51,8 +49,7 @@ phi = cp.arctan2(Y, X)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-eta = np.where(Z < -1, 0, Z + 1)  # Parameter used to interpolate between states
-eta = np.where(Z > 1, 2, eta)
+eta = 2 * sm.get_linear_interp(Z)
 
 # Spin rotation angles:
 r = cp.sqrt(X ** 2 + Y ** 2)
