@@ -33,7 +33,7 @@ V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0.  # Linear Zeeman
 q = 0  # Quadratic Zeeman
 c0 = 1.32e4
-c2 = 146 * 2 * (sm.get_linear_interp(Z) - 0.5)
+c2 = -146 * 2 * (sm.get_linear_interp(Z) - 0.5)
 c4 = -129
 
 # Time steps, number and wavefunction save variables
