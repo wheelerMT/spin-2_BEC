@@ -282,8 +282,8 @@ def renorm_magnetisation(target_mag, Wfn):
     Wfn[4] *= r5
 
 
-def get_linear_interp(z):
-    linear_eta = 0.25 * z + 0.5
+def get_linear_interp(z, gradient=0.25):
+    linear_eta = gradient * z + 0.5
     linear_eta[linear_eta > 1] = 1
     linear_eta[linear_eta < 0] = 0
 
