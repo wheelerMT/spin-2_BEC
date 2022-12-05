@@ -7,13 +7,13 @@ plt.rcParams.update({'font.size': 18})
 matplotlib.use('TkAgg')
 
 # Load in data:
-data_path = 'frames/199f_C-FM=2_third-SQV'   # input('Enter file path of data to view: ')
+data_path = 'frames/imag_time/49f_UN-BN_VF-SQV'   # input('Enter file path of data to view: ')
 data = h5py.File('../../data/3D/{}.hdf5'.format(data_path), 'r')
 num_of_frames = data['wavefunction/psiP2'].shape[-1]
 print("Working with {} frames of data".format(num_of_frames))
 
 # Frame of data to work with
-frame = -1
+frame = 0
 
 # Wavefunction
 psiP2 = data['wavefunction/psiP2'][:, :, :, frame]
@@ -50,24 +50,31 @@ n = diag.calc_density(Wfn)
 # Calculate normalised wavefunction
 Zeta = diag.normalise_wfn(Wfn)
 
-# Calculate spin vectors
-fx, fy, fz = diag.calc_spin_vectors(psiP2, psiP1, psi0, psiM1, psiM2)
-F = np.sqrt(abs(fx) ** 2 + abs(fy) ** 2 + fz ** 2)
-
 # Calculate spin expectation
-spin_expec = tophat * F / n
-# spin_expec[n < 1e-6] = 0
+a20 = tophat * abs(diag.calc_spin_singlet_duo(Zeta[0], Zeta[1], Zeta[2], Zeta[3], Zeta[4])) ** 2
+a30 = tophat * abs(diag.calc_spin_singlet_trio(Zeta[0], Zeta[1], Zeta[2], Zeta[3], Zeta[4])) ** 2
 
-# Construct plot at constant y
-fig_consty, ax_consty = plt.subplots(1, figsize=(4.2, 3.54))
-ax_consty.set_xlim(-x.max(), x.max())
-ax_consty.set_ylim(-x.max(), x.max())
-ax_consty.set_xlabel(r'$x/\ell$')
-ax_consty.set_ylabel(r'$z/\ell$')
-y_index = Ny // 2
-consty_plot = ax_consty.contourf(X[:, y_index, :], Z[:, y_index, :], spin_expec[:, y_index, :], levels=200, cmap='jet')
-constz_cbar = plt.colorbar(consty_plot, ax=ax_consty, pad=0.01)
-constz_cbar.set_ticks([0, 1, 2])
-constz_cbar.set_ticklabels(['0', '1', '2'])
-plt.savefig('../../../plots/spin-2/paper/C-FM=2_third-SQV_spinMag_consty.png', bbox_inches='tight', dpi=200)
+# Plot
+fig, ax = plt.subplots(1, 2, figsize=(8, 4), sharey='row')
+for axis in ax:
+    axis.set_xlim(-x.max() + 2, x.max() - 2)
+    axis.set_ylim(-y.max() + 2, y.max() - 2)
+    axis.set_xlabel(r'$y/\ell$')
+ax[0].set_ylabel(r'$z/\ell$')
+x_index = Ny // 2 + 9
+
+consty_plot = ax[0].contourf(Y[x_index, :, :], Z[x_index, :, :], a20[x_index, :, :], levels=200, cmap='jet')
+ax[0].plot([-7, 7], [0, 0], 'w--', linewidth=3)
+constz_cbar = plt.colorbar(consty_plot, ax=ax[0], pad=0.01)
+constz_cbar.set_ticks([0, 0.2])
+constz_cbar.set_ticklabels(['0', '0.2'])
+
+plot = ax[1].contourf(Y[x_index, :, :], Z[x_index, :, :], a30[x_index, :, :], levels=200, cmap='jet')
+ax[1].plot([-7, 7], [0, 0], 'w--', linewidth=3)
+cbar = plt.colorbar(plot, ax=ax[1], pad=0.01)
+cbar.set_ticks([0, 1, 2])
+cbar.set_ticklabels(['0', '1', '2'])
+
+plt.tight_layout()
+plt.savefig('../../../plots/spin-2/paper/UN-BN_VF-SQV_spinSinglets.png', bbox_inches='tight', dpi=200)
 plt.show()

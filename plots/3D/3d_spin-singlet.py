@@ -7,14 +7,14 @@ import matplotlib
 matplotlib.use('TkAgg')
 
 # Load in data:
-data_path = 'UN-BN_SV-SV_025'   # input('Enter file path of data to view: ')
+data_path = 'frames/240f_UN-BN_SQV-SQV'   # input('Enter file path of data to view: ')
 data = h5py.File('../../data/3D/{}.hdf5'.format(data_path), 'r')
 num_of_frames = data['wavefunction/psiP2'].shape[-1]
 print("Working with {} frames of data".format(num_of_frames))
 # print(data['saved_times'][...])
 
 # Frame of data to work with
-frame = 20
+frame = 0
 
 # Wavefunction
 psiP2 = data['wavefunction/psiP2'][:, :, :, frame]
@@ -80,8 +80,8 @@ for axis in grid:
 
 # y and z indices for graphs:
 y_ind = Ny // 2
-z_upper_ind = Nz // 2 + 10
-z_lower_ind = Nz // 2 - 10
+z_upper_ind = Nz // 2 + 20
+z_lower_ind = Nz // 2 - 20
 
 # Plot titles:
 grid[0].set_title(r'$|<\vec{F}>|$')
