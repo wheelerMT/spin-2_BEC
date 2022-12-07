@@ -6,7 +6,7 @@ import h5py
 # --------------------------------------------------------------------------------------------------------------------
 # Spatial and Potential parameters:
 # --------------------------------------------------------------------------------------------------------------------
-Nx, Ny, Nz = 64, 64, 64  # Number of grid points
+Nx, Ny, Nz = 128, 128, 128  # Number of grid points
 Mx, My, Mz = Nx // 2, Ny // 2, Nz // 2
 dx, dy, dz = 20 / Nx, 20 / Ny, 20 / Nz  # Grid spacing
 dkx, dky, dkz = np.pi / (Mx * dx), np.pi / (My * dy), np.pi / (Mz * dz)  # K-space spacing
@@ -33,11 +33,7 @@ V = 0.5 * omega_trap ** 2 * (X ** 2 + Y ** 2 + Z ** 2)
 p = 0  # Linear Zeeman
 gradient = 0.25
 scale = 0.3
-# q = scale * (1 / (1 + np.exp(-sigma * Z)) - 0.5)
-q = gradient * Z + 0.5
-q[q > 1] = 1
-q[q < 0] = 0
-q -= 0.5
+q = sm.get_linear_interp(Z, gradient=0.5) - 0.5
 q *= scale
 
 c0 = 1.32e4
@@ -57,9 +53,7 @@ phi = cp.arctan2(Y - 0.01, X - 0.01)  # Phase is azimuthal angle around the core
 
 Tf = sm.get_TF_density_3d(c0, c2, X, Y, Z, N=1)
 
-eta = gradient * Z + 0.5
-eta[eta > 1] = 1
-eta[eta < 0] = 0
+eta = sm.get_linear_interp(Z, gradient=0.5)
 
 # Generate initial wavefunctions:
 psiP2 = cp.sqrt(Tf) * cp.exp(1j * phi) / (2 * cp.sqrt(2)) * (cp.sqrt(1 - eta ** 2) + eta * cp.sqrt(3))
@@ -92,7 +86,7 @@ parameters = {
 }
 
 # Create dataset and save initial state
-filename = 'UN-BN_SV-SV_005'  # Name of file to save data to
+filename = 'UN-BN_SV-SV'  # Name of file to save data to
 data_path = '../../data/3D/{}.hdf5'.format(filename)
 k = 0  # Array index
 
