@@ -17,10 +17,10 @@ fig, ax = plt.subplots(1, figsize=(6.4, 3))
 ax.set_xlim(0, 6)
 ax.set_ylim(0 - 0.1, 2.1)
 
-ax.plot(r, mod_f, "k", label=r"$|\langle\mathbf{\hat{F}}(\mathbf{r})\rangle|$")
-ax.plot(r, mod_a30_C_FM, "k--", label=r"$|A_{30}(\mathbf{r})|^2$")
+ax.plot(r, mod_f, "k", label=r"$|\langle\mathbf{\hat{F}}(\rho)\rangle|$")
+ax.plot(r, mod_a30_C_FM, "k--", label=r"$|A_{30}(\rho)|^2$")
 
-ax.set_xlabel(r"$r$")
+ax.set_xlabel(r"$\rho$")
 ax.set_ylabel("Value")
 ax.set_yticks([0, 1, 2])
 ax.set_yticklabels(["0", "1", "2"])
