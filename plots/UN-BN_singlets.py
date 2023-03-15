@@ -38,14 +38,14 @@ a20_cbar = fig.colorbar(
     a20_plot, ax=ax[0], orientation="vertical", fraction=0.047, pad=0.02
 )
 a20_cbar.set_ticks([0, 0.2])
-a20_cbar.set_ticklabels(["0", "0.2"])
+a20_cbar.set_ticklabels([r"$0$", r"$0.2$"])
 
 
 a30_cbar = fig.colorbar(
     a30_plot, ax=ax[1], orientation="vertical", fraction=0.047, pad=0.02
 )
 a30_cbar.set_ticks([0, 1, 2])
-a30_cbar.set_ticklabels(["0", "1", "2"])
+a30_cbar.set_ticklabels([r"$0$", r"$1$", r"$2$"])
 
 plt.savefig(
     "../plots/spin-2/a20-a30-varying.png", dpi=200, bbox_inches="tight"
