@@ -88,6 +88,7 @@ constz_cbar = plt.colorbar(
 )
 constz_cbar.set_ticks([0, 1, 2])
 constz_cbar.set_ticklabels([r"$0$", r"$1$", r"$2$"])
+constz_cbar.set_label(r"$|\langle \hat{\mathbf{F}} \rangle|$", labelpad=12)
 plt.savefig(
     "../plots/spin-2/C-FM=2_third-SQV_spinMag.pdf",
     bbox_inches="tight",
